@@ -62,44 +62,6 @@ abstract class EmbeddedModel extends Fluent
 
 
     /**
-     * The built-in, primitive cast types supported by Eloquent.
-     *
-     * Note: List was obtained from Illuminate\Database\Eloquent\Concerns\HasAttributes
-     *
-     * @var string[]
-     */
-    protected static array $primitiveCastTypes = [
-        'array',
-        'bool',
-        'boolean',
-        'collection',
-        'custom_datetime',
-        'date',
-        'datetime',
-        'decimal',
-        'double',
-        'encrypted',
-        'encrypted:array',
-        'encrypted:collection',
-        'encrypted:json',
-        'encrypted:object',
-        'float',
-        'hashed',
-        'immutable_date',
-        'immutable_datetime',
-        'immutable_custom_datetime',
-        'int',
-        'integer',
-        'json',
-        'json:unicode',
-        'object',
-        'real',
-        'string',
-        'timestamp',
-    ];
-
-
-    /**
      * Fill the model with an array of attributes.
      *
      * @param iterable $attributes
