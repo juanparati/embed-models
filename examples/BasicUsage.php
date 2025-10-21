@@ -22,7 +22,7 @@ class Address extends EmbeddedModel
 {
     protected array $fillable = ['street', 'city', 'state', 'zip', 'country'];
 
-    protected array $casts = [
+    protected $casts = [
         'coordinates' => Coordinates::class,
     ];
 
@@ -44,7 +44,7 @@ class Address extends EmbeddedModel
 
 class Coordinates extends EmbeddedModel
 {
-    protected array $casts = [
+    protected $casts = [
         'lat' => 'float',
         'lng' => 'float',
     ];
@@ -62,7 +62,7 @@ class LineItem extends EmbeddedModel
 {
     protected array $fillable = ['sku', 'name', 'quantity', 'price'];
 
-    protected array $casts = [
+    protected $casts = [
         'quantity' => 'integer',
         'price' => 'float',
         'discount_applied' => 'boolean',

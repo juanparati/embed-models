@@ -32,7 +32,7 @@ abstract class EmbeddedModel extends Fluent
      *
      * @var string[]
      */
-    protected array $guarded = [];
+    protected $guarded = [];
 
 
     /**
@@ -40,7 +40,7 @@ abstract class EmbeddedModel extends Fluent
      *
      * @var array|string[]
      */
-    protected array $fillable = ['*'];
+    protected $fillable = ['*'];
 
 
     /**

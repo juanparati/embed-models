@@ -224,12 +224,12 @@ class TestAddress extends EmbeddedModel
 
 class TestAddressWithFillable extends EmbeddedModel
 {
-    protected array $fillable = ['street'];
+    protected $fillable = ['street'];
 }
 
 class TestAddressWithGuarded extends EmbeddedModel
 {
-    protected array $guarded = ['internal_id'];
+    protected $guarded = ['internal_id'];
 }
 
 class TestAddressWithValidation extends EmbeddedModel
