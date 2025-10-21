@@ -1,5 +1,5 @@
 {
-    "name": "juanparati/eloquent-embed-models",
+    "name": "juanparati/embed-models",
     "description": "Embed sub-models inside JSON fields in Laravel Eloquent models with full casting, validation, and mass assignment support",
     "type": "library",
     "license": "MIT",
@@ -8,6 +8,9 @@
             "name": "Juan Lago",
             "email": "juanparati@gmail.com"
         }
+    ],
+    "keywords": [
+        "eloquent", "models", "sub-models", "json", "embed", "embed-models"
     ],
     "require": {
         "php": "^8.2",
@@ -22,12 +25,12 @@
     },
     "autoload": {
         "psr-4": {
-            "EloquentEmbedModels\\": "src/"
+            "Juanparati\\EmbedModels\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "EloquentEmbedModels\\Tests\\": "tests/"
+            "Juanparati\\EmbedModels\\Tests\\": "tests/"
         }
     },
     "scripts": {

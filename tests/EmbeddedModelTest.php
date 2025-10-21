@@ -1,8 +1,9 @@
 <?php
 
-namespace EloquentEmbedModels\Tests;
+namespace Juanparati\EmbedModels\Tests;
 
-use EloquentEmbedModels\EmbeddedModel;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Juanparati\EmbedModels\EmbedModel;
 use Illuminate\Validation\ValidationException;
 use Orchestra\Testbench\TestCase;
 
@@ -213,26 +214,53 @@ class EmbeddedModelTest extends TestCase
 
         $this->assertSame(25, $model->age);
     }
+
+    /** @test */
+    public function it_handles_get_mutator_with_attribute_class()
+    {
+        $model = new TestModelWithMutatorSetterMethod(['name' => 'john doe']);
+
+        $this->assertEquals('JOHN DOE', $model->name);
+    }
+
+    /** @test */
+    public function it_handles_set_mutator_with_attribute_class()
+    {
+        $model       = new TestModelWithMutatorSetterMethod();
+        $model->name = '  john   doe  ';
+
+        $this->assertEquals('JOHN DOE', $model->name);
+    }
+
+    /** @test */
+    public function it_handles_enum_mutator()
+    {
+        $model       = new TestModelWithEnumCast();
+        $model->enum = TestEnum::Option2;
+
+        $this->assertEquals(TestEnum::Option2, $model->enum);
+        $this->assertEquals(["enum" => "option2"], $model->toArray());
+    }
 }
 
 // Test classes
 
-class TestAddress extends EmbeddedModel
+class TestAddress extends EmbedModel
 {
     //
 }
 
-class TestAddressWithFillable extends EmbeddedModel
+class TestAddressWithFillable extends EmbedModel
 {
     protected $fillable = ['street'];
 }
 
-class TestAddressWithGuarded extends EmbeddedModel
+class TestAddressWithGuarded extends EmbedModel
 {
     protected $guarded = ['internal_id'];
 }
 
-class TestAddressWithValidation extends EmbeddedModel
+class TestAddressWithValidation extends EmbedModel
 {
     protected function rules()
     {
@@ -242,7 +270,7 @@ class TestAddressWithValidation extends EmbeddedModel
     }
 }
 
-class TestModelWithCasts extends EmbeddedModel
+class TestModelWithCasts extends EmbedModel
 {
     protected function casts()
     {
@@ -255,19 +283,19 @@ class TestModelWithCasts extends EmbeddedModel
     }
 }
 
-class TestCoordinates extends EmbeddedModel
+class TestCoordinates extends EmbedModel
 {
     //
 }
 
-class TestAddressWithNested extends EmbeddedModel
+class TestAddressWithNested extends EmbedModel
 {
     protected $casts = [
         'coordinates' => TestCoordinates::class,
     ];
 }
 
-class TestWithCastFunction extends EmbeddedModel
+class TestWithCastFunction extends EmbedModel
 {
     protected function casts(): array
     {
@@ -277,7 +305,7 @@ class TestWithCastFunction extends EmbeddedModel
     }
 }
 
-class TestModelWithAccessor extends EmbeddedModel
+class TestModelWithAccessor extends EmbedModel
 {
     public function getFullNameAttribute()
     {
@@ -285,10 +313,40 @@ class TestModelWithAccessor extends EmbeddedModel
     }
 }
 
-class TestModelWithMutator extends EmbeddedModel
+class TestModelWithMutator extends EmbedModel
 {
     public function setEmailAttribute($value)
     {
-        return strtolower($value);
+        $this->attributes['email'] = strtolower($value);
     }
 }
+
+
+class TestModelWithMutatorSetterMethod extends EmbedModel
+{
+    protected function name() : Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => strtoupper($value),
+            set: fn ($value) => \Str::squish($value),
+        );
+    }
+}
+
+
+enum TestEnum : string {
+    case Option1 = 'option1';
+    case Option2 = 'option2';
+}
+
+class TestModelWithEnumCast extends EmbedModel
+{
+    protected function casts(): array
+    {
+        return [
+            'enum' => TestEnum::class,
+        ];
+    }
+}
+
+

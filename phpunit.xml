@@ -9,7 +9,7 @@
         <env name="APP_KEY" value="AckfSECXIvnK5r28GVIWUAxmbBSjTsmF"/>
     </php>
     <testsuites>
-        <testsuite name="EloquentEmbedModels Test Suite">
+        <testsuite name="Juanparati EmbedModels Test Suite">
             <directory>tests</directory>
         </testsuite>
     </testsuites>

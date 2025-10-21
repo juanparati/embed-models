@@ -1,11 +1,11 @@
 <?php
 
-namespace EloquentEmbedModels\Tests;
+namespace Juanparati\EmbedModels\Tests;
 
-use EloquentEmbedModels\Casts\AsEmbeddedModel;
-use EloquentEmbedModels\Casts\AsEmbeddedCollection;
-use EloquentEmbedModels\EmbeddedModel;
-use EloquentEmbedModels\EmbeddedCollection;
+use Juanparati\EmbedModels\Casts\AsEmbedModel;
+use Juanparati\EmbedModels\Casts\AsEmbedCollection;
+use Juanparati\EmbedModels\EmbedModel;
+use Juanparati\EmbedModels\EmbedCollection;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Database\Eloquent\Model;
 use Orchestra\Testbench\TestCase;
@@ -228,8 +228,8 @@ class TestOrder extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'shipping_address' => AsEmbeddedModel::class . ':' . TestShippingAddress::class,
-        'line_items' => AsEmbeddedCollection::class . ':' . TestOrderLineItemCollection::class,
+        'shipping_address' => AsEmbedModel::class . ':' . TestShippingAddress::class,
+        'line_items' => AsEmbedCollection::class . ':' . TestOrderLineItemCollection::class,
     ];
 }
 
@@ -242,26 +242,26 @@ class TestOrderWithCastFunction extends Model
     protected function casts()
     {
         return [
-            'shipping_address' => AsEmbeddedModel::of(TestShippingAddress::class),
-            'line_items' => AsEmbeddedCollection::of(TestOrderLineItemCollection::class),
+            'shipping_address' => AsEmbedModel::of(TestShippingAddress::class),
+            'line_items' => AsEmbedCollection::of(TestOrderLineItemCollection::class),
         ];
     }
 }
 
 // Test Embedded Models
-class TestShippingAddress extends EmbeddedModel
+class TestShippingAddress extends EmbedModel
 {
     protected function casts() {
-        return ['coordinates' => AsEmbeddedModel::of(TestGeoCoordinates::class)];
+        return ['coordinates' => AsEmbedModel::of(TestGeoCoordinates::class)];
     }
 }
 
-class TestGeoCoordinates extends EmbeddedModel
+class TestGeoCoordinates extends EmbedModel
 {
     //
 }
 
-class TestOrderLineItem extends EmbeddedModel
+class TestOrderLineItem extends EmbedModel
 {
     protected $casts = [
         'quantity' => 'integer',
@@ -269,7 +269,7 @@ class TestOrderLineItem extends EmbeddedModel
     ];
 }
 
-class TestOrderLineItemCollection extends EmbeddedCollection
+class TestOrderLineItemCollection extends EmbedCollection
 {
     protected function getDefaultModelClass(): string
     {

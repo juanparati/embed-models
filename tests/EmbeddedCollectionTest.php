@@ -1,9 +1,9 @@
 <?php
 
-namespace EloquentEmbedModels\Tests;
+namespace Juanparati\EmbedModels\Tests;
 
-use EloquentEmbedModels\EmbeddedModel;
-use EloquentEmbedModels\EmbeddedCollection;
+use Juanparati\EmbedModels\EmbedModel;
+use Juanparati\EmbedModels\EmbedCollection;
 use Orchestra\Testbench\TestCase;
 
 class EmbeddedCollectionTest extends TestCase
@@ -240,12 +240,12 @@ class EmbeddedCollectionTest extends TestCase
 
 // Test classes
 
-class TestLineItem extends EmbeddedModel
+class TestLineItem extends EmbedModel
 {
     //
 }
 
-class TestLineItemCollection extends EmbeddedCollection
+class TestLineItemCollection extends EmbedCollection
 {
     protected function getDefaultModelClass(): string
     {

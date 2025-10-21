@@ -1,12 +1,12 @@
 <?php
 
-namespace EloquentEmbedModels\Casts;
+namespace Juanparati\EmbedModels\Casts;
 
-use EloquentEmbedModels\EmbeddedCollection;
+use Juanparati\EmbedModels\EmbedCollection;
 use Illuminate\Contracts\Database\Eloquent\Castable;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 
-class AsEmbeddedCollection implements Castable
+class AsEmbedCollection implements Castable
 {
     /**
      * Get the caster class to use when casting from / to this cast target.
@@ -16,7 +16,7 @@ class AsEmbeddedCollection implements Castable
      */
     public static function castUsing(array $arguments): CastsAttributes
     {
-        return new AsEmbeddedCollectionCaster($arguments[0] ?? null);
+        return new AsEmbedCollectionCaster($arguments[0] ?? null);
     }
 
     /**
@@ -31,7 +31,7 @@ class AsEmbeddedCollection implements Castable
     }
 }
 
-class AsEmbeddedCollectionCaster implements CastsAttributes
+class AsEmbedCollectionCaster implements CastsAttributes
 {
     /**
      * The embedded collection class.
@@ -48,7 +48,7 @@ class AsEmbeddedCollectionCaster implements CastsAttributes
     public function __construct(?string $collectionClass = null)
     {
         if (!$collectionClass) {
-            throw new \InvalidArgumentException('Collection class must be specified for AsEmbeddedCollection cast.');
+            throw new \InvalidArgumentException('Collection class must be specified for AsEmbedCollection cast.');
         }
 
         $this->collectionClass = $collectionClass;
@@ -61,9 +61,9 @@ class AsEmbeddedCollectionCaster implements CastsAttributes
      * @param  string  $key
      * @param  mixed  $value
      * @param  array  $attributes
-     * @return \EloquentEmbedModels\EmbeddedCollection|null
+     * @return \Juanparati\EmbedModels\EmbedCollection|null
      */
-    public function get(\Illuminate\Database\Eloquent\Model $model, string $key, mixed $value, array $attributes): ?EmbeddedCollection
+    public function get(\Illuminate\Database\Eloquent\Model $model, string $key, mixed $value, array $attributes): ?EmbedCollection
     {
         if (is_null($value)) {
             return null;
@@ -93,7 +93,7 @@ class AsEmbeddedCollectionCaster implements CastsAttributes
             return null;
         }
 
-        if ($value instanceof EmbeddedCollection) {
+        if ($value instanceof EmbedCollection) {
             return json_encode($value->toArray());
         }
 

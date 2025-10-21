@@ -2,36 +2,42 @@
 
 A Laravel package that allows you to embed sub-models inside JSON fields in Eloquent models. These embedded models behave like full Eloquent models with attributes, guards, casts, validation, and more.
 
+
 ## Features
 
-- **Full Model Behavior**: Embedded models support attributes, accessors, mutators, casts, fillable/guarded
+- **Model Behavior**: Embedded models support attributes, accessors, mutators, casts, fillable/guarded
 - **Validation**: Validate embedded model attributes on write with Laravel's validation rules
 - **Nested Support**: Embed models within embedded models
 - **Collections**: Handle arrays of embedded models with collection-like interfaces
 - **Array Access**: Access embedded model attributes like arrays
 - **Type Casting**: Support for all Eloquent casting types (dates, booleans, integers, etc.)
 - **No Persistence Methods**: Embedded models don't have save/update/delete - they're saved via the parent model
+- **JSON raw**: Save embedded models as JSON raw strings (not objects serialization)
+
 
 ## Installation
 
 ```bash
-composer require juanparati/eloquent-embed-models
+composer require juanparati/embed-models
 ```
 
-## Basic Usage
 
-### 1. Define Your Embedded Model
+## Basic usage
+
+### 1. Define your embedded model
 
 ```php
-use EloquentEmbedModels\EmbeddedModel;
+use Juanparati\EmbedModels\EmbedModel;
 
-class Address extends EmbeddedModel
+class Address extends EmbedModel
 {
     protected $fillable = ['street', 'city', 'zip', 'country'];
 
-    protected $casts = [
-        'verified' => 'boolean',
-    ];
+    protected function casts() {
+        return [
+            'verified' => 'boolean',
+        ];
+    }   
 
     protected function rules()
     {
@@ -45,21 +51,25 @@ class Address extends EmbeddedModel
 
 Note: All embed-models attributes are fillable by default in opposition to normal Eloquent models.
 
-### 2. Use It in Your Eloquent Model
+
+### 2. Use it in your eloquent model
 
 ```php
 use Illuminate\Database\Eloquent\Model;
-use EloquentEmbedModels\Casts\AsEmbeddedModel;
+use Juanparati\EmbedModels\Casts\AsEmbeddedModel;
 
 class Order extends Model
 {
-    protected $casts = [
-        'shipping_address' => AsEmbeddedModel::class . ':' . Address::class,
-    ];
+    protected function casts() {
+        return [
+            'shipping_address' => AsEmbeddedModel::of(Address::class),
+        ];
+    }  
 }
 ```
 
-### 3. Work with Embedded Models
+
+### 3. Work with embedded models
 
 ```php
 // Create an order with an embedded address
@@ -82,21 +92,25 @@ $order->shipping_address['city'] = 'New Springfield';
 echo $order->shipping_address->street; // "456 Oak Ave"
 ```
 
-## Collections of Embedded Models
 
-### 1. Define Your Collection
+## Collections of embedded models
+
+### 1. Define your collection
 
 ```php
-use EloquentEmbedModels\EmbeddedModel;
-use EloquentEmbedModels\EmbeddedCollection;
+use Juanparati\EmbedModels\EmbedModel;
+use Juanparati\EmbedModels\EmbedCollection;
 
-class LineItem extends EmbeddedModel
+class LineItem extends EmbedModel
 {
-    protected $casts = [
-        'quantity' => 'integer',
-        'price' => 'float',
-    ];
-
+    protected function casts() 
+    {
+        return [
+            'quantity' => 'integer',
+            'price' => 'float',
+        ];
+    }
+    
     protected function rules()
     {
         return [
@@ -106,7 +120,7 @@ class LineItem extends EmbeddedModel
     }
 }
 
-class LineItemCollection extends EmbeddedCollection
+class LineItemCollection extends EmbedCollection
 {
     protected function getDefaultModelClass()
     {
@@ -115,20 +129,23 @@ class LineItemCollection extends EmbeddedCollection
 }
 ```
 
-### 2. Use in Your Model
+### 2. Use in your model
 
 ```php
-use EloquentEmbedModels\Casts\AsEmbeddedCollection;
+use Juanparati\EmbedModels\Casts\AsEmbedCollection;
 
 class Order extends Model
 {
-    protected $casts = [
-        'line_items' => AsEmbeddedCollection::class . ':' . LineItemCollection::class,
-    ];
+
+    protected function casts() {
+        return [
+            'line_items' => AsEmbedCollection::of(LineItemCollection::class),
+        ];  
+    }   
 }
 ```
 
-### 3. Work with Collections
+### 3. Work with collections
 
 ```php
 $order = new Order();
@@ -153,9 +170,10 @@ $expensive = $order->line_items->filter(fn($item) => $item->price > 15);
 $order->save();
 ```
 
-## Advanced Features
 
-### Nested Embedded Models
+## Advanced features
+
+### Nested embedded models
 
 ```php
 class Coordinates extends EmbeddedModel
@@ -182,7 +200,7 @@ $order->shipping_address = new Address([
 echo $order->shipping_address->coordinates->lat; // 40.7128
 ```
 
-### Accessors and Mutators
+### Accessors and mutators
 
 ```php
 class Address extends EmbeddedModel
@@ -302,21 +320,4 @@ class Product extends EmbeddedModel
 
 4. **No Persistence Methods**: Embedded models don't have `save()`, `update()`, or `delete()` methods. They're saved only through the parent model.
 
-## Requirements
 
-- PHP 8.1+
-- Laravel 10.0+ or 11.0+
-
-## Testing
-
-```bash
-composer test
-```
-
-## License
-
-MIT License
-
-## Contributing
-
-Contributions are welcome! Please submit pull requests or open issues on GitHub.

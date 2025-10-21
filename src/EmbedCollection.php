@@ -1,6 +1,6 @@
 <?php
 
-namespace EloquentEmbedModels;
+namespace Juanparati\EmbedModels;
 
 use Illuminate\Support\Collection;
 use ArrayAccess;
@@ -9,7 +9,7 @@ use Illuminate\Contracts\Support\Jsonable;
 use JsonSerializable;
 use Traversable;
 
-class EmbeddedCollection implements ArrayAccess, Arrayable, Jsonable, JsonSerializable, \Countable, \IteratorAggregate
+class EmbedCollection implements ArrayAccess, Arrayable, Jsonable, JsonSerializable, \Countable, \IteratorAggregate
 {
     /**
      * The embedded model class name.
@@ -58,7 +58,7 @@ class EmbeddedCollection implements ArrayAccess, Arrayable, Jsonable, JsonSerial
             }
         }
 
-        return EmbeddedModel::class;
+        return EmbedModel::class;
     }
 
     /**
@@ -89,9 +89,9 @@ class EmbeddedCollection implements ArrayAccess, Arrayable, Jsonable, JsonSerial
      * Make a model instance from the given data.
      *
      * @param  mixed  $data
-     * @return \EloquentEmbedModels\EmbeddedModel
+     * @return \Juanparati\EmbedModels\EmbedModel
      */
-    protected function makeModel($data): EmbeddedModel
+    protected function makeModel($data): EmbedModel
     {
         if ($data instanceof $this->modelClass) {
             return $data;

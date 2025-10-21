@@ -1,20 +1,19 @@
 <?php
 
-namespace EloquentEmbedModels;
+namespace Juanparati\EmbedModels;
 
-use Carbon\CarbonInterface;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Concerns\HidesAttributes;
 use Illuminate\Support\Fluent;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Validator;
 use JsonSerializable;
-use EloquentEmbedModels\Concerns\HasAttributesWithoutModel;
+use Juanparati\EmbedModels\Concerns\HasAttributesWithoutModel;
 
-abstract class EmbeddedModel extends Fluent
+abstract class EmbedModel extends Fluent
 {
     use HidesAttributes;
+
     use HasAttributesWithoutModel {
         castAttribute as castAttributeOrig;
     }
@@ -100,6 +99,7 @@ abstract class EmbeddedModel extends Fluent
      * @param mixed $value
      * @return $this
      */
+    /*
     public function setAttribute($key, $value): static
     {
         // Run validation before setting
@@ -119,6 +119,49 @@ abstract class EmbeddedModel extends Fluent
 
         return $this;
     }
+    */
+
+    public function setAttribute($key, $value)
+    {
+
+        $this->validateAttribute($key, $value);
+
+        // First we will check for the presence of a mutator for the set operation
+        // which simply lets the developers tweak the attribute as it is set on
+        // this model, such as "json_encoding" a listing of data for storage.
+        if ($this->hasSetMutator($key)) {
+            return $this->setMutatedAttributeValue($key, $value);
+        } elseif ($this->hasAttributeSetMutator($key)) {
+            return $this->setAttributeMarkedMutatedAttributeValue($key, $value);
+        }
+
+        if ($this->isEnumCastable($key)) {
+            $this->setEnumCastableAttribute($key, $value);
+
+            return $this;
+        }
+
+        /*
+        if ($this->isClassCastable($key)) {
+            $this->setClassCastableAttribute($key, $value);
+
+            return $this;
+        }
+        */
+
+        if (! is_null($value) && $this->isEncryptedCastable($key)) {
+            $value = $this->castAttributeAsEncryptedString($key, $value);
+        }
+
+        if (! is_null($value) && $this->hasCast($key, 'hashed')) {
+            $value = $this->castAttributeAsHashedString($key, $value);
+        }
+
+        $this->attributes[$key] = $value;
+
+        return $this;
+    }
+
 
     /**
      * Get an attribute from the embedded model.
@@ -132,7 +175,7 @@ abstract class EmbeddedModel extends Fluent
             return null;
         }
 
-        // Check if attribute exists
+        // Check if the attribute exists
         if (array_key_exists($key, $this->attributes) || $this->hasGetMutator($key)) {
             return $this->getAttributeValue($key);
         }
@@ -140,75 +183,7 @@ abstract class EmbeddedModel extends Fluent
         return null;
     }
 
-    /**
-     * Get a plain attribute (not a relationship).
-     *
-     * @param string $key
-     * @return mixed
-     */
-    protected function getAttributeValue($key): mixed
-    {
-        // Handle mutators
-        if ($this->hasGetMutator($key)) {
-            return $this->mutateAttribute($key, $this->attributes[$key] ?? null);
-        }
 
-        $value = $this->attributes[$key] ?? null;
-
-        // Handle casting
-        if ($this->hasCast($key)) {
-            return $this->castAttribute($key, $value);
-        }
-
-        return $value;
-    }
-
-    /**
-     * Determine if a get mutator exists for an attribute.
-     *
-     * @param string $key
-     * @return bool
-     */
-    public function hasGetMutator($key): bool
-    {
-        return method_exists($this, 'get' . Str::studly($key) . 'Attribute');
-    }
-
-    /**
-     * Determine if a set mutator exists for an attribute.
-     *
-     * @param string $key
-     * @return bool
-     */
-    public function hasSetMutator($key): bool
-    {
-        return method_exists($this, 'set' . Str::studly($key) . 'Attribute');
-    }
-
-    /**
-     * Get the value of an attribute using its mutator.
-     *
-     * @param string $key
-     * @param mixed $value
-     * @return mixed
-     */
-    protected function mutateAttribute($key, $value): mixed
-    {
-        return $this->{'get' . Str::studly($key) . 'Attribute'}($value);
-    }
-
-    /**
-     * Set the value of an attribute using its mutator.
-     *
-     * @param string $key
-     * @param mixed $value
-     * @return mixed
-     */
-    protected function setMutatedAttributeValue($key, $value): mixed
-    {
-        $this->attributes[$key] = $this->{'set' . Str::studly($key) . 'Attribute'}($value);
-        return $this;
-    }
 
     /**
      * Determine whether an attribute should be cast to a native type.
@@ -231,6 +206,7 @@ abstract class EmbeddedModel extends Fluent
 
         return $this->cachedCasts;
     }
+
 
 
     /**
@@ -264,26 +240,6 @@ abstract class EmbeddedModel extends Fluent
     }
 
     /**
-     * Get the type of cast for a model attribute.
-     *
-     * @param string $key
-     * @return string
-     */
-
-    protected function getCastType($key): string
-    {
-        $casts = $this->getCasts();
-        $castType = $casts[$key];
-
-        // Handle parameterized casting (e.g., "decimal:2")
-        if (str_contains($castType, ':')) {
-            return explode(':', $castType, 2)[0];
-        }
-
-        return $castType;
-    }
-
-    /**
      * Cast an attribute to a custom class.
      *
      * @param string $key
@@ -294,7 +250,7 @@ abstract class EmbeddedModel extends Fluent
     protected function castAttributeAsClass(string $key, mixed $value, string $castType): mixed
     {
         // Handle nested EmbeddedModel
-        if (is_subclass_of($castType, EmbeddedModel::class)) {
+        if (is_subclass_of($castType, EmbedModel::class)) {
             if (is_array($value)) {
                 return new $castType($value);
             }
@@ -305,34 +261,13 @@ abstract class EmbeddedModel extends Fluent
         }
 
         // Handle EmbeddedCollection
-        if (is_subclass_of($castType, EmbeddedCollection::class)) {
+        if (is_subclass_of($castType, EmbedCollection::class)) {
             return new $castType($value);
         }
 
         return null;
     }
 
-    /**
-     * Return a timestamp as DateTime object.
-     *
-     * @param mixed $value
-     * @return CarbonInterface
-     */
-    protected function asDateTime($value): CarbonInterface
-    {
-        return \Illuminate\Support\Carbon::parse($value);
-    }
-
-    /**
-     * Return a timestamp as unix timestamp.
-     *
-     * @param mixed $value
-     * @return int
-     */
-    protected function asTimestamp($value): int
-    {
-        return $this->asDateTime($value)->getTimestamp();
-    }
 
     /**
      * Validate an attribute before setting it.

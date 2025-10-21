@@ -1,12 +1,12 @@
 <?php
 
-namespace EloquentEmbedModels\Casts;
+namespace Juanparati\EmbedModels\Casts;
 
-use EloquentEmbedModels\EmbeddedModel;
+use Juanparati\EmbedModels\EmbedModel;
 use Illuminate\Contracts\Database\Eloquent\Castable;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 
-class AsEmbeddedModel implements Castable
+class AsEmbedModel implements Castable
 {
     /**
      * Get the caster class to use when casting from / to this cast target.
@@ -16,7 +16,7 @@ class AsEmbeddedModel implements Castable
      */
     public static function castUsing(array $arguments): CastsAttributes
     {
-        return new AsEmbeddedModelCaster($arguments[0] ?? null);
+        return new AsEmbedModelCaster($arguments[0] ?? null);
     }
 
     /**
@@ -31,7 +31,7 @@ class AsEmbeddedModel implements Castable
     }
 }
 
-class AsEmbeddedModelCaster implements CastsAttributes
+class AsEmbedModelCaster implements CastsAttributes
 {
     /**
      * The embedded model class.
@@ -61,9 +61,9 @@ class AsEmbeddedModelCaster implements CastsAttributes
      * @param  string  $key
      * @param  mixed  $value
      * @param  array  $attributes
-     * @return \EloquentEmbedModels\EmbeddedModel|null
+     * @return \Juanparati\EmbedModels\EmbedModel|null
      */
-    public function get(\Illuminate\Database\Eloquent\Model|\EloquentEmbedModels\EmbeddedModel $model, string $key, mixed $value, array $attributes): ?EmbeddedModel
+    public function get(\Illuminate\Database\Eloquent\Model|\Juanparati\EmbedModels\EmbedModel $model, string $key, mixed $value, array $attributes): ?EmbedModel
     {
         if (is_null($value)) {
             return null;
@@ -87,13 +87,13 @@ class AsEmbeddedModelCaster implements CastsAttributes
      * @param  array  $attributes
      * @return string|null
      */
-    public function set(\Illuminate\Database\Eloquent\Model|\EloquentEmbedModels\EmbeddedModel $model, string $key, mixed $value, array $attributes): ?string
+    public function set(\Illuminate\Database\Eloquent\Model|\Juanparati\EmbedModels\EmbedModel $model, string $key, mixed $value, array $attributes): ?string
     {
         if (is_null($value)) {
             return null;
         }
 
-        if ($value instanceof EmbeddedModel) {
+        if ($value instanceof EmbedModel) {
             return json_encode($value->toArray());
         }
 
