@@ -63,7 +63,7 @@ class AsEmbeddedModelCaster implements CastsAttributes
      * @param  array  $attributes
      * @return \EloquentEmbedModels\EmbeddedModel|null
      */
-    public function get(\Illuminate\Database\Eloquent\Model $model, string $key, mixed $value, array $attributes): ?EmbeddedModel
+    public function get(\Illuminate\Database\Eloquent\Model|\EloquentEmbedModels\EmbeddedModel $model, string $key, mixed $value, array $attributes): ?EmbeddedModel
     {
         if (is_null($value)) {
             return null;
@@ -87,7 +87,7 @@ class AsEmbeddedModelCaster implements CastsAttributes
      * @param  array  $attributes
      * @return string|null
      */
-    public function set(\Illuminate\Database\Eloquent\Model $model, string $key, mixed $value, array $attributes): ?string
+    public function set(\Illuminate\Database\Eloquent\Model|\EloquentEmbedModels\EmbeddedModel $model, string $key, mixed $value, array $attributes): ?string
     {
         if (is_null($value)) {
             return null;

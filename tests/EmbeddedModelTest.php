@@ -244,12 +244,15 @@ class TestAddressWithValidation extends EmbeddedModel
 
 class TestModelWithCasts extends EmbeddedModel
 {
-    protected array $casts = [
-        'age' => 'integer',
-        'active' => 'boolean',
-        'options' => 'array',
-        'created_at' => 'datetime',
-    ];
+    protected function casts()
+    {
+        return [
+            'age' => 'integer',
+            'active' => 'boolean',
+            'options' => 'array',
+            'created_at' => 'datetime',
+        ];
+    }
 }
 
 class TestCoordinates extends EmbeddedModel
@@ -259,7 +262,7 @@ class TestCoordinates extends EmbeddedModel
 
 class TestAddressWithNested extends EmbeddedModel
 {
-    protected array $casts = [
+    protected $casts = [
         'coordinates' => TestCoordinates::class,
     ];
 }

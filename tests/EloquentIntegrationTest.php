@@ -249,11 +249,10 @@ class TestOrderWithCastFunction extends Model
 }
 
 // Test Embedded Models
-
 class TestShippingAddress extends EmbeddedModel
 {
     protected function casts() {
-        return ['coordinates' => TestGeoCoordinates::class];
+        return ['coordinates' => AsEmbeddedModel::of(TestGeoCoordinates::class)];
     }
 }
 
@@ -264,7 +263,7 @@ class TestGeoCoordinates extends EmbeddedModel
 
 class TestOrderLineItem extends EmbeddedModel
 {
-    protected array $casts = [
+    protected $casts = [
         'quantity' => 'integer',
         'price' => 'float',
     ];

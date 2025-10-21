@@ -10,17 +10,15 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Validator;
 use JsonSerializable;
+use EloquentEmbedModels\Concerns\HasAttributesWithoutModel;
 
 abstract class EmbeddedModel extends Fluent
 {
     use HidesAttributes;
+    use HasAttributesWithoutModel {
+        castAttribute as castAttributeOrig;
+    }
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected array $casts = [];
 
     /**
      * The cached cast types.
@@ -52,13 +50,11 @@ abstract class EmbeddedModel extends Fluent
      */
     protected static bool $unguarded = false;
 
-
-    /**
-     * The cache of the mutated attributes for each class.
-     *
-     * @var array
-     */
-    protected static array $mutatorCache = [];
+    public function __construct($attributes = [])
+    {
+        $this->initializeHasAttributes();
+        parent::__construct($attributes);
+    }
 
 
     /**
@@ -236,16 +232,6 @@ abstract class EmbeddedModel extends Fluent
         return $this->cachedCasts;
     }
 
-    /**
-     * Determine whether an attribute should be cast to a native type.
-     *
-     * @param string $key
-     * @return bool
-     */
-    protected function hasCast($key): bool
-    {
-        return array_key_exists($key, $this->getCasts());
-    }
 
     /**
      * Cast an attribute to a native PHP type.
@@ -256,41 +242,25 @@ abstract class EmbeddedModel extends Fluent
      */
     protected function castAttribute($key, $value): mixed
     {
-        if (is_null($value)) {
-            return $value;
+        $newValue = $this->castAttributeAsClass($key, $value, $this->getCastType($key));
+
+        if ($newValue !== null) {
+            return $newValue;
         }
 
-        $castType = $this->getCastType($key);
-
-        switch ($castType) {
-            case 'int':
-            case 'integer':
-                return (int)$value;
-            case 'real':
-            case 'float':
-            case 'double':
-                return (float)$value;
-            case 'string':
-                return (string)$value;
-            case 'bool':
-            case 'boolean':
-                return (bool)$value;
+        // Handle basic types that don't need Laravel's cast system
+        switch ($this->getCastType($key)) {
             case 'array':
             case 'json':
-                return is_string($value) ? json_decode($value, true) : $value;
+                return is_string($value) ? json_decode($value, true) : (array)$value;
             case 'object':
                 return is_string($value) ? json_decode($value) : (object)$value;
             case 'collection':
-                return collect($value);
-            case 'date':
-            case 'datetime':
-                return $this->asDateTime($value);
-            case 'timestamp':
-                return $this->asTimestamp($value);
-            default:
-                // Handle custom class casts (like nested EmbeddedModel)
-                return $this->castAttributeAsClass($key, $value, $castType);
+                $data = is_string($value) ? json_decode($value, true) : $value;
+                return collect($data);
         }
+
+        return $this->castAttributeOrig($key, $value);
     }
 
     /**
@@ -299,6 +269,7 @@ abstract class EmbeddedModel extends Fluent
      * @param string $key
      * @return string
      */
+
     protected function getCastType($key): string
     {
         $casts = $this->getCasts();
@@ -338,7 +309,7 @@ abstract class EmbeddedModel extends Fluent
             return new $castType($value);
         }
 
-        return $value;
+        return null;
     }
 
     /**
