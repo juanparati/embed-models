@@ -5,14 +5,14 @@ A Laravel package that allows to embed sub-models inside JSON fields in Eloquent
 
 ## Features
 
-- **Model Behavior**: Embedded models support attributes, accessors, mutators, casts, fillable/guarded
-- **Validation**: Validate embedded model attributes on write with Laravel's validation rules
-- **Nested Support**: Embed models within embedded models
-- **Collections**: Handle arrays of embedded models with collection-like interfaces
-- **Array Access**: Access embedded model attributes like arrays
-- **Type Casting**: Support for all Eloquent casting types (dates, booleans, integers, etc.)
-- **No Persistence Methods**: Embedded models don't have save/update/delete - they're saved via the parent model
-- **JSON raw**: Save embedded models as JSON raw strings (not objects serialization)
+- **Model Behavior**: Embedded models support attributes, accessors, mutators, casts, fillable/guarded.
+- **Validation**: Validate embedded model attributes on write with Laravel's validation rules.
+- **Nested Support**: Embed models within embedded models.
+- **Collections**: Handle arrays of embedded models with collection-like interfaces.
+- **Array Access**: Access embedded model attributes like arrays.
+- **Type Casting**: Support for all Eloquent casting types (dates, booleans, integers, etc.).
+- **No Persistence Methods**: Embedded models don't save/delete - they're saved via the parent model.
+- **JSON raw**: Save embedded models as JSON raw strings (not objects serialization).
 - **Transparent hydration**: Inject your nested embed-model directly from a post request or array.
 
 
@@ -338,7 +338,7 @@ class Product extends EmbeddedModel
 
 1. **No Auto-Dirty Tracking**: Modifying embedded models doesn't automatically mark the parent as dirty. You must explicitly call `$parent->save()`.
 
-2. **Null Initialization**: If a JSON field is null in the database, accessing it returns `null`, not an empty embedded model.
+2. **Null Initialization**: If a JSON field is null in the database, accessing it returns `null`, not an empty embedded model, however it's possible to initialize an embedded model using default attributes.
 
 3. **Validation Timing**: Validation runs when attributes are set, not when the parent model saves.
 
