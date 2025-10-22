@@ -1,3 +1,5 @@
+![Test passed](https://github.com/juanparati/embed-models/actions/workflows/test.yml/badge.svg)
+
 # Eloquent Embed Models
 
 A Laravel package that allows to embed sub-models inside JSON fields in Eloquent models. These embedded models behave like full Eloquent models with attributes, guards and casts.
