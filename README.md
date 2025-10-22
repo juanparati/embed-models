@@ -1,6 +1,6 @@
 # Eloquent Embed Models
 
-A Laravel package that allows you to embed sub-models inside JSON fields in Eloquent models. These embedded models behave like full Eloquent models with attributes, guards, casts, validation, and more.
+A Laravel package that allows to embed sub-models inside JSON fields in Eloquent models. These embedded models behave like full Eloquent models with attributes, guards and casts.
 
 
 ## Features
@@ -13,6 +13,7 @@ A Laravel package that allows you to embed sub-models inside JSON fields in Eloq
 - **Type Casting**: Support for all Eloquent casting types (dates, booleans, integers, etc.)
 - **No Persistence Methods**: Embedded models don't have save/update/delete - they're saved via the parent model
 - **JSON raw**: Save embedded models as JSON raw strings (not objects serialization)
+- **Transparent hydration**: Inject your nested embed-model directly from a post request or array.
 
 
 ## Installation
@@ -50,6 +51,22 @@ class Address extends EmbedModel
 ```
 
 Note: All embed-models attributes are fillable by default in opposition to normal Eloquent models.
+
+You can define default values for attributes, so the embed will have a basic structure:
+
+```php
+use Juanparati\EmbedModels\EmbedModel;
+
+class Address extends EmbedModel
+{    
+    protected $attributes = [
+        'street' => '',
+        'city' => 'Aarhus',
+        'zip' => '8200',
+        'country' => 'Denmark',
+    ];   
+}
+```
 
 
 ### 2. Use it in your eloquent model
@@ -159,7 +176,7 @@ $order->line_items[] = new LineItem(['sku' => 'GHI', 'quantity' => 2, 'price' =>
 $order->line_items->push(['sku' => 'JKL', 'quantity' => 1, 'price' => 25.00]);
 
 // Access items
-echo $order->line_items[0]->sku; // "ABC"
+echo $order->line_items[3]->sku; // "JKL"
 
 // Use collection methods
 $total = $order->line_items->sum(fn($item) => $item->quantity * $item->price);
@@ -168,6 +185,23 @@ $total = $order->line_items->sum(fn($item) => $item->quantity * $item->price);
 $expensive = $order->line_items->filter(fn($item) => $item->price > 15);
 
 $order->save();
+```
+
+You can also transparently append arrays to embed collections, and they are automatically getting converted to embedded models:
+
+```php
+$order = new Order();
+$order->line_items = [
+    ['sku' => 'ABC', 'quantity' => 5, 'price' => 10.00],
+    ['sku' => 'DEF', 'quantity' => 3, 'price' => 15.00],
+];
+
+// Add items
+$order->line_items[] = ['sku' => 'GHI', 'quantity' => 2, 'price' => 20.00];
+$order->line_items[] = ['sku' => 'JKL', 'quantity' => 1, 'price' => 25.00];
+
+// Access items
+echo $order->line_items[3]->sku; // "JKL"
 ```
 
 
@@ -187,7 +221,7 @@ class Coordinates extends EmbeddedModel
 class Address extends EmbeddedModel
 {
     protected $casts = [
-        'coordinates' => Coordinates::class,
+        'coordinates' => AsEmbedModel::of(Coordinates::class),
     ];
 }
 
@@ -205,6 +239,27 @@ echo $order->shipping_address->coordinates->lat; // 40.7128
 ```php
 class Address extends EmbeddedModel
 {
+    protected function fullAddress(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return Attribute::make(
+            get: fn() => "{$this->street}, {$this->city}, {$this->zip}"
+        );
+    }
+
+    protected function zipAttribute(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return Attribute::make(
+            set: fn($value) => str_pad($value, 5, '0', STR_PAD_LEFT)
+        );     
+    }
+}
+```
+
+You can also use legacy accessors and mutators:
+
+```php
+class Address extends EmbeddedModel
+{
     public function getFullAddressAttribute()
     {
         return "{$this->street}, {$this->city}, {$this->zip}";
@@ -215,15 +270,11 @@ class Address extends EmbeddedModel
         return str_pad($value, 5, '0', STR_PAD_LEFT);
     }
 }
-
-// Usage
-echo $order->shipping_address->full_address; // "123 Main St, Springfield, 12345"
-
-$order->shipping_address->zip = 123;
-echo $order->shipping_address->zip; // "00123"
 ```
 
-### Mass Assignment Protection
+### Mass assignment protection
+
+Embed models are fillable by default in opposition of normal Eloquent models, but you can also still use guarded attributes:
 
 ```php
 class Address extends EmbeddedModel
@@ -241,6 +292,8 @@ $address = new Address([
 ```
 
 ### Validation
+
+In case that validation rules are defined, they will be automatically applied to embedded models.
 
 Validation runs automatically when you set attributes:
 
@@ -275,40 +328,11 @@ class Product extends EmbeddedModel
         'options' => 'array',
         'released_at' => 'datetime',
         'metadata' => 'json',
+        ...
     ];
 }
 ```
 
-## API Reference
-
-### EmbeddedModel
-
-**Properties:**
-- `$fillable` - Mass assignable attributes
-- `$guarded` - Guarded attributes
-- `$casts` - Attribute casting
-
-**Methods:**
-- `fill(array $attributes)` - Fill model with attributes
-- `toArray()` - Convert to array
-- `toJson()` - Convert to JSON
-- `getAttribute($key)` - Get attribute value
-- `setAttribute($key, $value)` - Set attribute value
-- `rules()` - Define validation rules (override this)
-
-### EmbeddedCollection
-
-**Methods:**
-- `push($item)` - Add item to collection
-- `get($key)` - Get item by key
-- `put($key, $value)` - Set item by key
-- `forget($key)` - Remove item
-- `first()`, `last()` - Get first/last item
-- `filter($callback)` - Filter items
-- `map($callback)` - Map over items
-- `count()` - Get count
-- `isEmpty()`, `isNotEmpty()` - Check if empty
-- Plus all Laravel Collection methods via proxy
 
 ## Behavior Notes
 

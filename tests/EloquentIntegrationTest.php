@@ -192,6 +192,7 @@ class EloquentIntegrationTest extends TestCase
         $order->line_items = new TestOrderLineItemCollection([
             ['sku' => 'ABC', 'quantity' => '5', 'price' => '10.50'],
         ]);
+
         $order->save();
 
         $retrieved = TestOrder::find($order->id);
@@ -200,6 +201,29 @@ class EloquentIntegrationTest extends TestCase
         $this->assertSame(5, $retrieved->line_items[0]->quantity);
         // Float cast should work
         $this->assertSame(10.5, $retrieved->line_items[0]->price);
+    }
+
+    /** @test */
+    public function embedded_model_casts_work_correctly_transparently()
+    {
+        $order = new TestOrder;
+        $order->line_items = [
+            ['sku' => 'ABC', 'quantity' => '5', 'price' => '10.50'],
+        ];
+
+        $order->line_items[] = ['sku' => 'DEF', 'quantity' => '3', 'price' => '15.20'];
+
+        $order->save();
+
+        $retrieved = TestOrder::find($order->id);
+
+        // Integer cast should work
+        $this->assertSame(5, $retrieved->line_items[0]->quantity);
+        // Float cast should work
+        $this->assertSame(10.5, $retrieved->line_items[0]->price);
+        $this->assertSame(15.2, $retrieved->line_items[1]->price);
+        // Check append line
+        $this->assertSame('DEF', $retrieved->line_items[1]->sku);
     }
 
     /** @test */

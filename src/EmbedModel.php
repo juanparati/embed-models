@@ -9,8 +9,9 @@ use Illuminate\Support\Fluent;
 use Illuminate\Validation\ValidationException;
 use JsonSerializable;
 use Juanparati\EmbedModels\Concerns\HasAttributesWithoutModel;
+use Juanparati\EmbedModels\Contracts\EmbedModelInterface;
 
-abstract class EmbedModel extends Fluent
+abstract class EmbedModel extends Fluent implements EmbedModelInterface
 {
     use HasAttributesWithoutModel {
         castAttribute as castAttributeOrig;
@@ -142,8 +143,8 @@ abstract class EmbedModel extends Fluent
             return null;
         }
 
-        // Check if the attribute exists
-        if (array_key_exists($key, $this->attributes) || $this->hasGetMutator($key)) {
+        // Check if the attribute exists or has an accessor
+        if (array_key_exists($key, $this->attributes) || $this->hasGetMutator($key) || $this->hasAttributeGetMutator($key)) {
             return $this->getAttributeValue($key);
         }
 
@@ -274,7 +275,26 @@ abstract class EmbedModel extends Fluent
             $attributes[$key] = $this->getArrayableValue($value);
         }
 
+        // Append accessors
+        foreach ($this->getArrayableAppends() as $key) {
+            $attributes[$key] = $this->getArrayableValue($this->getAttribute($key));
+        }
+
         return $attributes;
+    }
+
+    /**
+     * Get the accessors that are being appended to arrays.
+     *
+     * @return array
+     */
+    protected function getArrayableAppends()
+    {
+        if (!isset($this->appends)) {
+            return [];
+        }
+
+        return $this->appends;
     }
 
     /**

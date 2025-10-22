@@ -2,14 +2,12 @@
 
 namespace Juanparati\EmbedModels;
 
-use ArrayAccess;
 use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Support\Collection;
-use JsonSerializable;
+use Juanparati\EmbedModels\Contracts\EmbedCollectionInterface;
 use Traversable;
 
-class EmbedCollection implements \Countable, \IteratorAggregate, Arrayable, ArrayAccess, Jsonable, JsonSerializable
+class EmbedCollection implements EmbedCollectionInterface
 {
     /**
      * The embedded model class name.

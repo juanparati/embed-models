@@ -241,6 +241,19 @@ class EmbeddedModelTest extends TestCase
         $this->assertEquals(TestEnum::Option2, $model->enum);
         $this->assertEquals(['enum' => 'option2'], $model->toArray());
     }
+
+    /** @test */
+    public function it_generates_virtual_attributes()
+    {
+        $model = new TestModelWithVirtualAttribute;
+        $model->foo = 'bar';
+
+
+        $this->assertEquals('Generated Attribute', $model->generated_attr);
+        $this->assertEquals('Virtual Attribute', $model->virtual_attr);
+        $this->assertEquals('bar', $model->foo);
+    }
+
 }
 
 // Test classes
@@ -345,5 +358,21 @@ class TestModelWithEnumCast extends EmbedModel
         return [
             'enum' => TestEnum::class,
         ];
+    }
+}
+
+class TestModelWithVirtualAttribute extends EmbedModel
+{
+    protected $attributes = [
+        'virtual_attr' => 'Virtual Attribute',
+    ];
+
+    protected $appends = ['generated_attr'];
+
+    protected function generatedAttr(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => 'Generated Attribute',
+        );
     }
 }

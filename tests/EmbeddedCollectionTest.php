@@ -2,6 +2,8 @@
 
 namespace Juanparati\EmbedModels\Tests;
 
+use Juanparati\EmbedModels\Casts\AsEmbedCollection;
+use Juanparati\EmbedModels\Casts\AsEmbedModel;
 use Juanparati\EmbedModels\EmbedCollection;
 use Juanparati\EmbedModels\EmbedModel;
 use Orchestra\Testbench\TestCase;
@@ -236,6 +238,19 @@ class EmbeddedCollectionTest extends TestCase
         $this->assertInstanceOf(TestLineItem::class, $collection[0]);
         $this->assertInstanceOf(TestLineItem::class, $collection[1]);
     }
+
+    /** @test */
+    public function it_can_cast_collection_automatically()
+    {
+        $model = new TestMainModel(['line_items' => [
+            ['sku' => 'ABC', 'quantity' => 5],
+            ['sku' => 'DEF', 'quantity' => 3],
+        ]]);
+
+        $this->assertInstanceOf(TestLineItem::class, $model->line_items[0]);
+        $this->assertEquals('ABC', $model->line_items[0]->sku);
+    }
+
 }
 
 // Test classes
@@ -250,5 +265,15 @@ class TestLineItemCollection extends EmbedCollection
     protected function getDefaultModelClass(): string
     {
         return TestLineItem::class;
+    }
+}
+
+class TestMainModel extends EmbedModel
+{
+    protected function casts()
+    {
+        return [
+            'line_items' => AsEmbedCollection::of(TestLineItemCollection::class),
+        ];
     }
 }

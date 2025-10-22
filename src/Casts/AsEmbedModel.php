@@ -2,9 +2,12 @@
 
 namespace Juanparati\EmbedModels\Casts;
 
+use \Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Database\Eloquent\Castable;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
+use Juanparati\EmbedModels\Contracts\EmbedModelInterface;
 use Juanparati\EmbedModels\EmbedModel;
+
 
 class AsEmbedModel implements Castable
 {
@@ -47,9 +50,18 @@ class AsEmbedModelCaster implements CastsAttributes
     /**
      * Cast the given value.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param Model|EmbedModelInterface $model
+     * @param string $key
+     * @param mixed $value
+     * @param array $attributes
+     * @return EmbedModel|null
      */
-    public function get(\Illuminate\Database\Eloquent\Model|\Juanparati\EmbedModels\EmbedModel $model, string $key, mixed $value, array $attributes): ?EmbedModel
+    public function get(
+        $model,
+        string $key,
+        mixed $value,
+        array $attributes
+    ): ?EmbedModelInterface
     {
         if (is_null($value)) {
             return null;
@@ -67,15 +79,24 @@ class AsEmbedModelCaster implements CastsAttributes
     /**
      * Prepare the given value for storage.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param Model|EmbedModelInterface $model
+     * @param string $key
+     * @param mixed $value
+     * @param array $attributes
+     * @return string|null
      */
-    public function set(\Illuminate\Database\Eloquent\Model|\Juanparati\EmbedModels\EmbedModel $model, string $key, mixed $value, array $attributes): ?string
+    public function set(
+        $model,
+        string $key,
+        mixed $value,
+        array $attributes
+    ): ?string
     {
         if (is_null($value)) {
             return null;
         }
 
-        if ($value instanceof EmbedModel) {
+        if ($value instanceof EmbedModelInterface) {
             return json_encode($value->toArray());
         }
 
