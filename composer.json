@@ -20,9 +20,9 @@
     },
     "require-dev": {
         "orchestra/testbench": "^9.0",
-        "phpunit/phpunit": "^10.0",
         "mockery/mockery": "^1.5",
-        "laravel/pint": "^1.25"
+        "laravel/pint": "^1.25",
+        "pestphp/pest": "^4.1"
     },
     "autoload": {
         "psr-4": {
@@ -35,9 +35,14 @@
         }
     },
     "scripts": {
-        "test": "vendor/bin/phpunit",
+        "test": "vendor/bin/pest",
         "pint": "vendor/bin/pint"
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
 }

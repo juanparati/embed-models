@@ -1,260 +1,198 @@
 <?php
 
-namespace Juanparati\EmbedModels\Tests;
-
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Validation\ValidationException;
 use Juanparati\EmbedModels\EmbedModel;
-use Orchestra\Testbench\TestCase;
 
-class EmbeddedModelTest extends TestCase
-{
-    /** @test */
-    public function it_can_create_embedded_model_with_attributes()
-    {
-        $address = new TestAddress(['street' => '123 Main St', 'city' => 'Springfield']);
+it('can create embedded model with attributes', function () {
+    $address = new TestAddress(['street' => '123 Main St', 'city' => 'Springfield']);
 
-        $this->assertEquals('123 Main St', $address->street);
-        $this->assertEquals('Springfield', $address->city);
-    }
+    expect($address->street)->toBe('123 Main St');
+    expect($address->city)->toBe('Springfield');
+});
 
-    /** @test */
-    public function it_supports_array_access()
-    {
-        $address = new TestAddress(['street' => '123 Main St']);
+it('supports array access', function () {
+    $address = new TestAddress(['street' => '123 Main St']);
 
-        $this->assertEquals('123 Main St', $address['street']);
+    expect($address['street'])->toBe('123 Main St');
 
-        $address['city'] = 'Springfield';
-        $this->assertEquals('Springfield', $address['city']);
-    }
+    $address['city'] = 'Springfield';
+    expect($address['city'])->toBe('Springfield');
+});
 
-    /** @test */
-    public function it_respects_fillable_attributes()
-    {
-        $address = new TestAddressWithFillable(['street' => '123 Main St', 'internal_id' => 'secret']);
+it('respects fillable attributes', function () {
+    $address = new TestAddressWithFillable(['street' => '123 Main St', 'internal_id' => 'secret']);
 
-        $this->assertEquals('123 Main St', $address->street);
-        $this->assertNull($address->internal_id);
-    }
+    expect($address->street)->toBe('123 Main St');
+    expect($address->internal_id)->toBeNull();
+});
 
-    /** @test */
-    public function it_respects_guarded_attributes()
-    {
-        $address = new TestAddressWithGuarded(['street' => '123 Main St', 'internal_id' => 'secret']);
+it('respects guarded attributes', function () {
+    $address = new TestAddressWithGuarded(['street' => '123 Main St', 'internal_id' => 'secret']);
 
-        $this->assertEquals('123 Main St', $address->street);
-        $this->assertNull($address->internal_id);
-    }
+    expect($address->street)->toBe('123 Main St');
+    expect($address->internal_id)->toBeNull();
+});
 
-    /** @test */
-    public function it_validates_attributes_on_set()
-    {
-        $this->expectException(ValidationException::class);
+it('validates attributes on set', function () {
+    $address = new TestAddressWithValidation;
+    $address->zip = 'invalid';
+})->throws(ValidationException::class);
 
-        $address = new TestAddressWithValidation;
-        $address->zip = 'invalid';
-    }
+it('allows valid attributes', function () {
+    $address = new TestAddressWithValidation;
+    $address->zip = '12345';
 
-    /** @test */
-    public function it_allows_valid_attributes()
-    {
-        $address = new TestAddressWithValidation;
-        $address->zip = '12345';
+    expect($address->zip)->toBe('12345');
+});
 
-        $this->assertEquals('12345', $address->zip);
-    }
+it('validates on construction', function () {
+    new TestAddressWithValidation(['zip' => 'invalid']);
+})->throws(ValidationException::class);
 
-    /** @test */
-    public function it_validates_on_construction()
-    {
-        $this->expectException(ValidationException::class);
+it('casts integer attributes', function () {
+    $model = new TestModelWithCasts(['age' => '25']);
 
-        new TestAddressWithValidation(['zip' => 'invalid']);
-    }
+    expect($model->age)->toBe(25);
+});
 
-    /** @test */
-    public function it_casts_integer_attributes()
-    {
-        $model = new TestModelWithCasts(['age' => '25']);
+it('casts boolean attributes', function () {
+    $model = new TestModelWithCasts(['active' => 1]);
 
-        $this->assertSame(25, $model->age);
-    }
+    expect($model->active)->toBe(true);
+});
 
-    /** @test */
-    public function it_casts_boolean_attributes()
-    {
-        $model = new TestModelWithCasts(['active' => 1]);
+it('casts array attributes', function () {
+    $model = new TestModelWithCasts(['options' => '{"key":"value"}']);
 
-        $this->assertSame(true, $model->active);
-    }
+    expect($model->options)->toBeArray();
+    expect($model->options)->toBe(['key' => 'value']);
+});
 
-    /** @test */
-    public function it_casts_array_attributes()
-    {
-        $model = new TestModelWithCasts(['options' => '{"key":"value"}']);
+it('casts datetime attributes', function () {
+    $model = new TestModelWithCasts(['created_at' => '2024-01-01 12:00:00']);
 
-        $this->assertIsArray($model->options);
-        $this->assertEquals(['key' => 'value'], $model->options);
-    }
+    expect($model->created_at)->toBeInstanceOf(\Illuminate\Support\Carbon::class);
+});
 
-    /** @test */
-    public function it_casts_datetime_attributes()
-    {
-        $model = new TestModelWithCasts(['created_at' => '2024-01-01 12:00:00']);
+it('supports nested embedded models', function () {
+    $address = new TestAddressWithNested([
+        'street' => '123 Main St',
+        'coordinates' => ['lat' => 40.7128, 'lng' => -74.0060],
+    ]);
 
-        $this->assertInstanceOf(\Illuminate\Support\Carbon::class, $model->created_at);
-    }
+    expect($address->coordinates)->toBeInstanceOf(TestCoordinates::class);
+    expect($address->coordinates->lat)->toBe(40.7128);
+    expect($address->coordinates->lng)->toBe(-74.0060);
+});
 
-    /** @test */
-    public function it_supports_nested_embedded_models()
-    {
-        $address = new TestAddressWithNested([
-            'street' => '123 Main St',
-            'coordinates' => ['lat' => 40.7128, 'lng' => -74.0060],
-        ]);
+it('converts to array', function () {
+    $address = new TestAddress(['street' => '123 Main St', 'city' => 'Springfield']);
 
-        $this->assertInstanceOf(TestCoordinates::class, $address->coordinates);
-        $this->assertEquals(40.7128, $address->coordinates->lat);
-        $this->assertEquals(-74.0060, $address->coordinates->lng);
-    }
+    $array = $address->toArray();
 
-    /** @test */
-    public function it_converts_to_array()
-    {
-        $address = new TestAddress(['street' => '123 Main St', 'city' => 'Springfield']);
+    expect($array)->toBe([
+        'street' => '123 Main St',
+        'city' => 'Springfield',
+    ]);
+});
 
-        $array = $address->toArray();
+it('converts to json', function () {
+    $address = new TestAddress(['street' => '123 Main St', 'city' => 'Springfield']);
 
-        $this->assertEquals([
-            'street' => '123 Main St',
-            'city' => 'Springfield',
-        ], $array);
-    }
+    $json = $address->toJson();
 
-    /** @test */
-    public function it_converts_to_json()
-    {
-        $address = new TestAddress(['street' => '123 Main St', 'city' => 'Springfield']);
+    expect($json)->toBeJson();
+    expect($json)->toBe('{"street":"123 Main St","city":"Springfield"}');
+});
 
-        $json = $address->toJson();
+it('converts nested models to array', function () {
+    $address = new TestAddressWithNested([
+        'street' => '123 Main St',
+        'coordinates' => ['lat' => 40.7128, 'lng' => -74.0060],
+    ]);
 
-        $this->assertJson($json);
-        $this->assertEquals('{"street":"123 Main St","city":"Springfield"}', $json);
-    }
+    $array = $address->toArray();
 
-    /** @test */
-    public function it_converts_nested_models_to_array()
-    {
-        $address = new TestAddressWithNested([
-            'street' => '123 Main St',
-            'coordinates' => ['lat' => 40.7128, 'lng' => -74.0060],
-        ]);
+    expect($array)->toBe([
+        'street' => '123 Main St',
+        'coordinates' => [
+            'lat' => 40.7128,
+            'lng' => -74.0060,
+        ],
+    ]);
+});
 
-        $array = $address->toArray();
+it('supports accessors', function () {
+    $model = new TestModelWithAccessor(['first_name' => 'John', 'last_name' => 'Doe']);
 
-        $this->assertEquals([
-            'street' => '123 Main St',
-            'coordinates' => [
-                'lat' => 40.7128,
-                'lng' => -74.0060,
-            ],
-        ], $array);
-    }
+    expect($model->full_name)->toBe('John Doe');
+});
 
-    /** @test */
-    public function it_supports_accessors()
-    {
-        $model = new TestModelWithAccessor(['first_name' => 'John', 'last_name' => 'Doe']);
+it('supports mutators', function () {
+    $model = new TestModelWithMutator;
+    $model->email = 'JOHN@EXAMPLE.COM';
 
-        $this->assertEquals('John Doe', $model->full_name);
-    }
+    expect($model->email)->toBe('john@example.com');
+});
 
-    /** @test */
-    public function it_supports_mutators()
-    {
-        $model = new TestModelWithMutator;
-        $model->email = 'JOHN@EXAMPLE.COM';
+it('handles null values', function () {
+    $address = new TestAddress(['street' => null]);
 
-        $this->assertEquals('john@example.com', $model->email);
-    }
+    expect($address->street)->toBeNull();
+});
 
-    /** @test */
-    public function it_handles_null_values()
-    {
-        $address = new TestAddress(['street' => null]);
+it('supports isset check', function () {
+    $address = new TestAddress(['street' => '123 Main St']);
 
-        $this->assertNull($address->street);
-    }
+    expect(isset($address->street))->toBeTrue();
+    expect(isset($address->city))->toBeFalse();
+});
 
-    /** @test */
-    public function it_supports_isset_check()
-    {
-        $address = new TestAddress(['street' => '123 Main St']);
+it('supports unset', function () {
+    $address = new TestAddress(['street' => '123 Main St', 'city' => 'Springfield']);
 
-        $this->assertTrue(isset($address->street));
-        $this->assertFalse(isset($address->city));
-    }
+    unset($address->city);
 
-    /** @test */
-    public function it_supports_unset()
-    {
-        $address = new TestAddress(['street' => '123 Main St', 'city' => 'Springfield']);
+    expect($address->city)->toBeNull();
+    expect($address->street)->toBe('123 Main St');
+});
 
-        unset($address->city);
+it('uses casts from function', function () {
+    $model = new TestWithCastFunction(['age' => '25']);
 
-        $this->assertNull($address->city);
-        $this->assertEquals('123 Main St', $address->street);
-    }
+    expect($model->age)->toBe(25);
+});
 
-    /** @test */
-    public function it_uses_casts_from_function()
-    {
-        $model = new TestWithCastFunction(['age' => '25']);
+it('handles get mutator with attribute class', function () {
+    $model = new TestModelWithMutatorSetterMethod(['name' => 'john doe']);
 
-        $this->assertSame(25, $model->age);
-    }
+    expect($model->name)->toBe('JOHN DOE');
+});
 
-    /** @test */
-    public function it_handles_get_mutator_with_attribute_class()
-    {
-        $model = new TestModelWithMutatorSetterMethod(['name' => 'john doe']);
+it('handles set mutator with attribute class', function () {
+    $model = new TestModelWithMutatorSetterMethod;
+    $model->name = '  john   doe  ';
 
-        $this->assertEquals('JOHN DOE', $model->name);
-    }
+    expect($model->name)->toBe('JOHN DOE');
+});
 
-    /** @test */
-    public function it_handles_set_mutator_with_attribute_class()
-    {
-        $model = new TestModelWithMutatorSetterMethod;
-        $model->name = '  john   doe  ';
+it('handles enum mutator', function () {
+    $model = new TestModelWithEnumCast;
+    $model->enum = TestEnum::Option2;
 
-        $this->assertEquals('JOHN DOE', $model->name);
-    }
+    expect($model->enum)->toBe(TestEnum::Option2);
+    expect($model->toArray())->toBe(['enum' => 'option2']);
+});
 
-    /** @test */
-    public function it_handles_enum_mutator()
-    {
-        $model = new TestModelWithEnumCast;
-        $model->enum = TestEnum::Option2;
+it('generates virtual attributes', function () {
+    $model = new TestModelWithVirtualAttribute;
+    $model->foo = 'bar';
 
-        $this->assertEquals(TestEnum::Option2, $model->enum);
-        $this->assertEquals(['enum' => 'option2'], $model->toArray());
-    }
-
-    /** @test */
-    public function it_generates_virtual_attributes()
-    {
-        $model = new TestModelWithVirtualAttribute;
-        $model->foo = 'bar';
-
-
-        $this->assertEquals('Generated Attribute', $model->generated_attr);
-        $this->assertEquals('Virtual Attribute', $model->virtual_attr);
-        $this->assertEquals('bar', $model->foo);
-    }
-
-}
+    expect($model->generated_attr)->toBe('Generated Attribute');
+    expect($model->virtual_attr)->toBe('Virtual Attribute');
+    expect($model->foo)->toBe('bar');
+});
 
 // Test classes
 

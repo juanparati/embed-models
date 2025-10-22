@@ -1,257 +1,215 @@
 <?php
 
-namespace Juanparati\EmbedModels\Tests;
-
 use Juanparati\EmbedModels\Casts\AsEmbedCollection;
-use Juanparati\EmbedModels\Casts\AsEmbedModel;
 use Juanparati\EmbedModels\EmbedCollection;
 use Juanparati\EmbedModels\EmbedModel;
-use Orchestra\Testbench\TestCase;
 
-class EmbeddedCollectionTest extends TestCase
-{
-    /** @test */
-    public function it_can_create_collection_from_array()
-    {
-        $collection = new TestLineItemCollection([
-            ['sku' => 'ABC', 'quantity' => 5],
-            ['sku' => 'DEF', 'quantity' => 3],
-        ]);
+it('can create collection from array', function () {
+    $collection = new TestLineItemCollection([
+        ['sku' => 'ABC', 'quantity' => 5],
+        ['sku' => 'DEF', 'quantity' => 3],
+    ]);
 
-        $this->assertCount(2, $collection);
-        $this->assertInstanceOf(TestLineItem::class, $collection[0]);
-        $this->assertEquals('ABC', $collection[0]->sku);
+    expect($collection)->toHaveCount(2);
+    expect($collection[0])->toBeInstanceOf(TestLineItem::class);
+    expect($collection[0]->sku)->toBe('ABC');
+});
+
+it('can create collection from json', function () {
+    $json = json_encode([
+        ['sku' => 'ABC', 'quantity' => 5],
+        ['sku' => 'DEF', 'quantity' => 3],
+    ]);
+
+    $collection = new TestLineItemCollection($json);
+
+    expect($collection)->toHaveCount(2);
+    expect($collection[0]->sku)->toBe('ABC');
+});
+
+it('supports array access', function () {
+    $collection = new TestLineItemCollection([
+        ['sku' => 'ABC', 'quantity' => 5],
+    ]);
+
+    expect($collection[0]->sku)->toBe('ABC');
+    expect(isset($collection[0]))->toBeTrue();
+
+    unset($collection[0]);
+    expect(isset($collection[0]))->toBeFalse();
+});
+
+it('supports array append', function () {
+    $collection = new TestLineItemCollection;
+
+    $collection[] = new TestLineItem(['sku' => 'ABC', 'quantity' => 5]);
+    $collection[] = ['sku' => 'DEF', 'quantity' => 3];
+
+    expect($collection)->toHaveCount(2);
+    expect($collection[0])->toBeInstanceOf(TestLineItem::class);
+    expect($collection[1])->toBeInstanceOf(TestLineItem::class);
+});
+
+it('supports push method', function () {
+    $collection = new TestLineItemCollection;
+
+    $collection->push(new TestLineItem(['sku' => 'ABC', 'quantity' => 5]));
+    $collection->push(['sku' => 'DEF', 'quantity' => 3]);
+
+    expect($collection)->toHaveCount(2);
+    expect($collection[0]->sku)->toBe('ABC');
+    expect($collection[1]->sku)->toBe('DEF');
+});
+
+it('supports collection methods', function () {
+    $collection = new TestLineItemCollection([
+        ['sku' => 'ABC', 'quantity' => 5],
+        ['sku' => 'DEF', 'quantity' => 3],
+        ['sku' => 'GHI', 'quantity' => 7],
+    ]);
+
+    $first = $collection->first();
+    expect($first->sku)->toBe('ABC');
+
+    $last = $collection->last();
+    expect($last->sku)->toBe('GHI');
+
+    expect($collection)->toHaveCount(3);
+    expect($collection->isEmpty())->toBeFalse();
+    expect($collection->isNotEmpty())->toBeTrue();
+});
+
+it('supports filter', function () {
+    $collection = new TestLineItemCollection([
+        ['sku' => 'ABC', 'quantity' => 5],
+        ['sku' => 'DEF', 'quantity' => 3],
+        ['sku' => 'GHI', 'quantity' => 7],
+    ]);
+
+    $filtered = $collection->filter(function ($item) {
+        return $item->quantity > 4;
+    });
+
+    expect($filtered)->toBeInstanceOf(TestLineItemCollection::class);
+    expect($filtered)->toHaveCount(2);
+});
+
+it('supports map', function () {
+    $collection = new TestLineItemCollection([
+        ['sku' => 'ABC', 'quantity' => 5],
+        ['sku' => 'DEF', 'quantity' => 3],
+    ]);
+
+    $skus = $collection->map(function ($item) {
+        return $item->sku;
+    });
+
+    expect($skus->all())->toBe(['ABC', 'DEF']);
+});
+
+it('converts to array', function () {
+    $collection = new TestLineItemCollection([
+        ['sku' => 'ABC', 'quantity' => 5],
+        ['sku' => 'DEF', 'quantity' => 3],
+    ]);
+
+    $array = $collection->toArray();
+
+    expect($array)->toBe([
+        ['sku' => 'ABC', 'quantity' => 5],
+        ['sku' => 'DEF', 'quantity' => 3],
+    ]);
+});
+
+it('converts to json', function () {
+    $collection = new TestLineItemCollection([
+        ['sku' => 'ABC', 'quantity' => 5],
+        ['sku' => 'DEF', 'quantity' => 3],
+    ]);
+
+    $json = $collection->toJson();
+
+    expect($json)->toBeJson();
+    $decoded = json_decode($json, true);
+    expect($decoded)->toHaveCount(2);
+});
+
+it('supports foreach iteration', function () {
+    $collection = new TestLineItemCollection([
+        ['sku' => 'ABC', 'quantity' => 5],
+        ['sku' => 'DEF', 'quantity' => 3],
+    ]);
+
+    $skus = [];
+    foreach ($collection as $item) {
+        $skus[] = $item->sku;
     }
 
-    /** @test */
-    public function it_can_create_collection_from_json()
-    {
-        $json = json_encode([
-            ['sku' => 'ABC', 'quantity' => 5],
-            ['sku' => 'DEF', 'quantity' => 3],
-        ]);
+    expect($skus)->toBe(['ABC', 'DEF']);
+});
 
-        $collection = new TestLineItemCollection($json);
+it('supports put and get', function () {
+    $collection = new TestLineItemCollection;
 
-        $this->assertCount(2, $collection);
-        $this->assertEquals('ABC', $collection[0]->sku);
-    }
+    $collection->put('first', ['sku' => 'ABC', 'quantity' => 5]);
 
-    /** @test */
-    public function it_supports_array_access()
-    {
-        $collection = new TestLineItemCollection([
-            ['sku' => 'ABC', 'quantity' => 5],
-        ]);
+    expect($collection->has('first'))->toBeTrue();
+    expect($collection->get('first')->sku)->toBe('ABC');
+});
 
-        $this->assertEquals('ABC', $collection[0]->sku);
-        $this->assertTrue(isset($collection[0]));
+it('supports forget', function () {
+    $collection = new TestLineItemCollection([
+        ['sku' => 'ABC', 'quantity' => 5],
+        ['sku' => 'DEF', 'quantity' => 3],
+    ]);
 
-        unset($collection[0]);
-        $this->assertFalse(isset($collection[0]));
-    }
+    $collection->forget(0);
 
-    /** @test */
-    public function it_supports_array_append()
-    {
-        $collection = new TestLineItemCollection;
+    expect($collection)->toHaveCount(1);
+});
 
-        $collection[] = new TestLineItem(['sku' => 'ABC', 'quantity' => 5]);
-        $collection[] = ['sku' => 'DEF', 'quantity' => 3];
+it('handles empty collection', function () {
+    $collection = new TestLineItemCollection;
 
-        $this->assertCount(2, $collection);
-        $this->assertInstanceOf(TestLineItem::class, $collection[0]);
-        $this->assertInstanceOf(TestLineItem::class, $collection[1]);
-    }
+    expect($collection)->toHaveCount(0);
+    expect($collection->isEmpty())->toBeTrue();
+    expect($collection->toArray())->toBe([]);
+});
 
-    /** @test */
-    public function it_supports_push_method()
-    {
-        $collection = new TestLineItemCollection;
+it('proxies collection methods', function () {
+    $collection = new TestLineItemCollection([
+        ['sku' => 'ABC', 'quantity' => 5],
+        ['sku' => 'DEF', 'quantity' => 3],
+    ]);
 
-        $collection->push(new TestLineItem(['sku' => 'ABC', 'quantity' => 5]));
-        $collection->push(['sku' => 'DEF', 'quantity' => 3]);
+    // Test pluck method (proxied to underlying collection)
+    $quantities = $collection->pluck('quantity');
 
-        $this->assertCount(2, $collection);
-        $this->assertEquals('ABC', $collection[0]->sku);
-        $this->assertEquals('DEF', $collection[1]->sku);
-    }
+    expect($quantities->all())->toBe([5, 3]);
+});
 
-    /** @test */
-    public function it_supports_collection_methods()
-    {
-        $collection = new TestLineItemCollection([
-            ['sku' => 'ABC', 'quantity' => 5],
-            ['sku' => 'DEF', 'quantity' => 3],
-            ['sku' => 'GHI', 'quantity' => 7],
-        ]);
+it('automatically converts items to models', function () {
+    $collection = new TestLineItemCollection;
 
-        $first = $collection->first();
-        $this->assertEquals('ABC', $first->sku);
+    // Add array
+    $collection->push(['sku' => 'ABC', 'quantity' => 5]);
 
-        $last = $collection->last();
-        $this->assertEquals('GHI', $last->sku);
+    // Add model
+    $collection->push(new TestLineItem(['sku' => 'DEF', 'quantity' => 3]));
 
-        $this->assertCount(3, $collection);
-        $this->assertFalse($collection->isEmpty());
-        $this->assertTrue($collection->isNotEmpty());
-    }
+    expect($collection[0])->toBeInstanceOf(TestLineItem::class);
+    expect($collection[1])->toBeInstanceOf(TestLineItem::class);
+});
 
-    /** @test */
-    public function it_supports_filter()
-    {
-        $collection = new TestLineItemCollection([
-            ['sku' => 'ABC', 'quantity' => 5],
-            ['sku' => 'DEF', 'quantity' => 3],
-            ['sku' => 'GHI', 'quantity' => 7],
-        ]);
+it('can cast collection automatically', function () {
+    $model = new TestMainModel(['line_items' => [
+        ['sku' => 'ABC', 'quantity' => 5],
+        ['sku' => 'DEF', 'quantity' => 3],
+    ]]);
 
-        $filtered = $collection->filter(function ($item) {
-            return $item->quantity > 4;
-        });
-
-        $this->assertInstanceOf(TestLineItemCollection::class, $filtered);
-        $this->assertCount(2, $filtered);
-    }
-
-    /** @test */
-    public function it_supports_map()
-    {
-        $collection = new TestLineItemCollection([
-            ['sku' => 'ABC', 'quantity' => 5],
-            ['sku' => 'DEF', 'quantity' => 3],
-        ]);
-
-        $skus = $collection->map(function ($item) {
-            return $item->sku;
-        });
-
-        $this->assertEquals(['ABC', 'DEF'], $skus->all());
-    }
-
-    /** @test */
-    public function it_converts_to_array()
-    {
-        $collection = new TestLineItemCollection([
-            ['sku' => 'ABC', 'quantity' => 5],
-            ['sku' => 'DEF', 'quantity' => 3],
-        ]);
-
-        $array = $collection->toArray();
-
-        $this->assertEquals([
-            ['sku' => 'ABC', 'quantity' => 5],
-            ['sku' => 'DEF', 'quantity' => 3],
-        ], $array);
-    }
-
-    /** @test */
-    public function it_converts_to_json()
-    {
-        $collection = new TestLineItemCollection([
-            ['sku' => 'ABC', 'quantity' => 5],
-            ['sku' => 'DEF', 'quantity' => 3],
-        ]);
-
-        $json = $collection->toJson();
-
-        $this->assertJson($json);
-        $decoded = json_decode($json, true);
-        $this->assertCount(2, $decoded);
-    }
-
-    /** @test */
-    public function it_supports_foreach_iteration()
-    {
-        $collection = new TestLineItemCollection([
-            ['sku' => 'ABC', 'quantity' => 5],
-            ['sku' => 'DEF', 'quantity' => 3],
-        ]);
-
-        $skus = [];
-        foreach ($collection as $item) {
-            $skus[] = $item->sku;
-        }
-
-        $this->assertEquals(['ABC', 'DEF'], $skus);
-    }
-
-    /** @test */
-    public function it_supports_put_and_get()
-    {
-        $collection = new TestLineItemCollection;
-
-        $collection->put('first', ['sku' => 'ABC', 'quantity' => 5]);
-
-        $this->assertTrue($collection->has('first'));
-        $this->assertEquals('ABC', $collection->get('first')->sku);
-    }
-
-    /** @test */
-    public function it_supports_forget()
-    {
-        $collection = new TestLineItemCollection([
-            ['sku' => 'ABC', 'quantity' => 5],
-            ['sku' => 'DEF', 'quantity' => 3],
-        ]);
-
-        $collection->forget(0);
-
-        $this->assertCount(1, $collection);
-    }
-
-    /** @test */
-    public function it_handles_empty_collection()
-    {
-        $collection = new TestLineItemCollection;
-
-        $this->assertCount(0, $collection);
-        $this->assertTrue($collection->isEmpty());
-        $this->assertEquals([], $collection->toArray());
-    }
-
-    /** @test */
-    public function it_proxies_collection_methods()
-    {
-        $collection = new TestLineItemCollection([
-            ['sku' => 'ABC', 'quantity' => 5],
-            ['sku' => 'DEF', 'quantity' => 3],
-        ]);
-
-        // Test pluck method (proxied to underlying collection)
-        $quantities = $collection->pluck('quantity');
-
-        $this->assertEquals([5, 3], $quantities->all());
-    }
-
-    /** @test */
-    public function it_automatically_converts_items_to_models()
-    {
-        $collection = new TestLineItemCollection;
-
-        // Add array
-        $collection->push(['sku' => 'ABC', 'quantity' => 5]);
-
-        // Add model
-        $collection->push(new TestLineItem(['sku' => 'DEF', 'quantity' => 3]));
-
-        $this->assertInstanceOf(TestLineItem::class, $collection[0]);
-        $this->assertInstanceOf(TestLineItem::class, $collection[1]);
-    }
-
-    /** @test */
-    public function it_can_cast_collection_automatically()
-    {
-        $model = new TestMainModel(['line_items' => [
-            ['sku' => 'ABC', 'quantity' => 5],
-            ['sku' => 'DEF', 'quantity' => 3],
-        ]]);
-
-        $this->assertInstanceOf(TestLineItem::class, $model->line_items[0]);
-        $this->assertEquals('ABC', $model->line_items[0]->sku);
-    }
-
-}
+    expect($model->line_items[0])->toBeInstanceOf(TestLineItem::class);
+    expect($model->line_items[0]->sku)->toBe('ABC');
+});
 
 // Test classes
 
