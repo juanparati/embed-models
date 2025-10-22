@@ -2,12 +2,12 @@
 
 namespace Juanparati\EmbedModels\Tests;
 
-use Juanparati\EmbedModels\Casts\AsEmbedModel;
-use Juanparati\EmbedModels\Casts\AsEmbedCollection;
-use Juanparati\EmbedModels\EmbedModel;
-use Juanparati\EmbedModels\EmbedCollection;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Database\Eloquent\Model;
+use Juanparati\EmbedModels\Casts\AsEmbedCollection;
+use Juanparati\EmbedModels\Casts\AsEmbedModel;
+use Juanparati\EmbedModels\EmbedCollection;
+use Juanparati\EmbedModels\EmbedModel;
 use Orchestra\Testbench\TestCase;
 
 class EloquentIntegrationTest extends TestCase
@@ -36,7 +36,7 @@ class EloquentIntegrationTest extends TestCase
     /** @test */
     public function it_can_save_and_retrieve_embedded_model()
     {
-        $order = new TestOrder();
+        $order = new TestOrder;
         $order->shipping_address = new TestShippingAddress([
             'street' => '123 Main St',
             'city' => 'Springfield',
@@ -55,7 +55,7 @@ class EloquentIntegrationTest extends TestCase
     /** @test */
     public function it_can_save_and_retrieve_embedded_collection()
     {
-        $order = new TestOrder();
+        $order = new TestOrder;
         $order->line_items = new TestOrderLineItemCollection([
             ['sku' => 'ABC', 'quantity' => 5, 'price' => 10.00],
             ['sku' => 'DEF', 'quantity' => 3, 'price' => 15.00],
@@ -73,7 +73,7 @@ class EloquentIntegrationTest extends TestCase
     /** @test */
     public function it_can_modify_embedded_model_and_save()
     {
-        $order = new TestOrder();
+        $order = new TestOrder;
         $order->shipping_address = new TestShippingAddress([
             'street' => '123 Main St',
             'city' => 'Springfield',
@@ -92,7 +92,7 @@ class EloquentIntegrationTest extends TestCase
     /** @test */
     public function it_can_modify_collection_items_and_save()
     {
-        $order = new TestOrder();
+        $order = new TestOrder;
         $order->line_items = new TestOrderLineItemCollection([
             ['sku' => 'ABC', 'quantity' => 5, 'price' => 10.00],
         ]);
@@ -112,7 +112,7 @@ class EloquentIntegrationTest extends TestCase
     /** @test */
     public function it_handles_null_embedded_model()
     {
-        $order = new TestOrder();
+        $order = new TestOrder;
         $order->save();
 
         $retrieved = TestOrder::find($order->id);
@@ -123,7 +123,7 @@ class EloquentIntegrationTest extends TestCase
     /** @test */
     public function it_handles_null_embedded_collection()
     {
-        $order = new TestOrder();
+        $order = new TestOrder;
         $order->save();
 
         $retrieved = TestOrder::find($order->id);
@@ -134,7 +134,7 @@ class EloquentIntegrationTest extends TestCase
     /** @test */
     public function it_supports_nested_embedded_models()
     {
-        $order = new TestOrder();
+        $order = new TestOrder;
         $order->shipping_address = new TestShippingAddress([
             'street' => '123 Main St',
             'city' => 'Springfield',
@@ -153,7 +153,7 @@ class EloquentIntegrationTest extends TestCase
     /** @test */
     public function it_serializes_embedded_models_to_json_correctly()
     {
-        $order = new TestOrder();
+        $order = new TestOrder;
         $order->shipping_address = new TestShippingAddress([
             'street' => '123 Main St',
             'city' => 'Springfield',
@@ -188,7 +188,7 @@ class EloquentIntegrationTest extends TestCase
     /** @test */
     public function embedded_model_casts_work_correctly()
     {
-        $order = new TestOrder();
+        $order = new TestOrder;
         $order->line_items = new TestOrderLineItemCollection([
             ['sku' => 'ABC', 'quantity' => '5', 'price' => '10.50'],
         ]);
@@ -205,7 +205,7 @@ class EloquentIntegrationTest extends TestCase
     /** @test */
     public function embedded_model_casts_as_function_work_correctly()
     {
-        $order = new TestOrderWithCastFunction();
+        $order = new TestOrderWithCastFunction;
         $order->line_items = new TestOrderLineItemCollection([
             ['sku' => 'ABC', 'quantity' => '5', 'price' => '10.50'],
         ]);
@@ -225,19 +225,20 @@ class EloquentIntegrationTest extends TestCase
 class TestOrder extends Model
 {
     protected $table = 'orders';
+
     protected $guarded = [];
 
     protected $casts = [
-        'shipping_address' => AsEmbedModel::class . ':' . TestShippingAddress::class,
-        'line_items' => AsEmbedCollection::class . ':' . TestOrderLineItemCollection::class,
+        'shipping_address' => AsEmbedModel::class.':'.TestShippingAddress::class,
+        'line_items' => AsEmbedCollection::class.':'.TestOrderLineItemCollection::class,
     ];
 }
 
 class TestOrderWithCastFunction extends Model
 {
     protected $table = 'orders';
-    protected $guarded = [];
 
+    protected $guarded = [];
 
     protected function casts()
     {
@@ -251,7 +252,8 @@ class TestOrderWithCastFunction extends Model
 // Test Embedded Models
 class TestShippingAddress extends EmbedModel
 {
-    protected function casts() {
+    protected function casts()
+    {
         return ['coordinates' => AsEmbedModel::of(TestGeoCoordinates::class)];
     }
 }

@@ -2,17 +2,14 @@
 
 namespace Juanparati\EmbedModels\Casts;
 
-use Juanparati\EmbedModels\EmbedCollection;
 use Illuminate\Contracts\Database\Eloquent\Castable;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
+use Juanparati\EmbedModels\EmbedCollection;
 
 class AsEmbedCollection implements Castable
 {
     /**
      * Get the caster class to use when casting from / to this cast target.
-     *
-     * @param  array  $arguments
-     * @return \Illuminate\Contracts\Database\Eloquent\CastsAttributes
      */
     public static function castUsing(array $arguments): CastsAttributes
     {
@@ -21,13 +18,10 @@ class AsEmbedCollection implements Castable
 
     /**
      * Factory method for fluent cast syntax.
-     *
-     * @param string $class
-     * @return string
      */
     public static function of(string $class): string
     {
-        return static::class . ':' . $class;
+        return static::class.':'.$class;
     }
 }
 
@@ -35,19 +29,15 @@ class AsEmbedCollectionCaster implements CastsAttributes
 {
     /**
      * The embedded collection class.
-     *
-     * @var string
      */
     protected string $collectionClass;
 
     /**
      * Create a new cast class instance.
-     *
-     * @param  string|null  $collectionClass
      */
     public function __construct(?string $collectionClass = null)
     {
-        if (!$collectionClass) {
+        if (! $collectionClass) {
             throw new \InvalidArgumentException('Collection class must be specified for AsEmbedCollection cast.');
         }
 
@@ -56,12 +46,6 @@ class AsEmbedCollectionCaster implements CastsAttributes
 
     /**
      * Cast the given value.
-     *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
-     * @param  string  $key
-     * @param  mixed  $value
-     * @param  array  $attributes
-     * @return \Juanparati\EmbedModels\EmbedCollection|null
      */
     public function get(\Illuminate\Database\Eloquent\Model $model, string $key, mixed $value, array $attributes): ?EmbedCollection
     {
@@ -80,12 +64,6 @@ class AsEmbedCollectionCaster implements CastsAttributes
 
     /**
      * Prepare the given value for storage.
-     *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
-     * @param  string  $key
-     * @param  mixed  $value
-     * @param  array  $attributes
-     * @return string|null
      */
     public function set(\Illuminate\Database\Eloquent\Model $model, string $key, mixed $value, array $attributes): ?string
     {

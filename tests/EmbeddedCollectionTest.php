@@ -2,8 +2,8 @@
 
 namespace Juanparati\EmbedModels\Tests;
 
-use Juanparati\EmbedModels\EmbedModel;
 use Juanparati\EmbedModels\EmbedCollection;
+use Juanparati\EmbedModels\EmbedModel;
 use Orchestra\Testbench\TestCase;
 
 class EmbeddedCollectionTest extends TestCase
@@ -52,7 +52,7 @@ class EmbeddedCollectionTest extends TestCase
     /** @test */
     public function it_supports_array_append()
     {
-        $collection = new TestLineItemCollection();
+        $collection = new TestLineItemCollection;
 
         $collection[] = new TestLineItem(['sku' => 'ABC', 'quantity' => 5]);
         $collection[] = ['sku' => 'DEF', 'quantity' => 3];
@@ -65,7 +65,7 @@ class EmbeddedCollectionTest extends TestCase
     /** @test */
     public function it_supports_push_method()
     {
-        $collection = new TestLineItemCollection();
+        $collection = new TestLineItemCollection;
 
         $collection->push(new TestLineItem(['sku' => 'ABC', 'quantity' => 5]));
         $collection->push(['sku' => 'DEF', 'quantity' => 3]);
@@ -177,7 +177,7 @@ class EmbeddedCollectionTest extends TestCase
     /** @test */
     public function it_supports_put_and_get()
     {
-        $collection = new TestLineItemCollection();
+        $collection = new TestLineItemCollection;
 
         $collection->put('first', ['sku' => 'ABC', 'quantity' => 5]);
 
@@ -201,7 +201,7 @@ class EmbeddedCollectionTest extends TestCase
     /** @test */
     public function it_handles_empty_collection()
     {
-        $collection = new TestLineItemCollection();
+        $collection = new TestLineItemCollection;
 
         $this->assertCount(0, $collection);
         $this->assertTrue($collection->isEmpty());
@@ -225,7 +225,7 @@ class EmbeddedCollectionTest extends TestCase
     /** @test */
     public function it_automatically_converts_items_to_models()
     {
-        $collection = new TestLineItemCollection();
+        $collection = new TestLineItemCollection;
 
         // Add array
         $collection->push(['sku' => 'ABC', 'quantity' => 5]);

@@ -2,36 +2,29 @@
 
 namespace Juanparati\EmbedModels;
 
-use Illuminate\Support\Collection;
 use ArrayAccess;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
+use Illuminate\Support\Collection;
 use JsonSerializable;
 use Traversable;
 
-class EmbedCollection implements ArrayAccess, Arrayable, Jsonable, JsonSerializable, \Countable, \IteratorAggregate
+class EmbedCollection implements \Countable, \IteratorAggregate, Arrayable, ArrayAccess, Jsonable, JsonSerializable
 {
     /**
      * The embedded model class name.
-     *
-     * @var string
      */
     protected string $modelClass;
 
     /**
      * The underlying collection instance.
-     *
-     * @var \Illuminate\Support\Collection
      */
     protected Collection $items;
 
     /**
      * Create a new embedded collection instance.
-     *
-     * @param  mixed  $items
-     * @param string|null $modelClass
      */
-    public function __construct(mixed $items = [], string $modelClass = null)
+    public function __construct(mixed $items = [], ?string $modelClass = null)
     {
         $this->modelClass = $modelClass ?? $this->getDefaultModelClass();
         $this->items = $this->makeCollection($items);
@@ -40,8 +33,6 @@ class EmbedCollection implements ArrayAccess, Arrayable, Jsonable, JsonSerializa
     /**
      * Get the default model class for this collection.
      * Override this method in subclasses to specify the model class.
-     *
-     * @return string
      */
     protected function getDefaultModelClass(): string
     {
@@ -51,7 +42,7 @@ class EmbedCollection implements ArrayAccess, Arrayable, Jsonable, JsonSerializa
         if (str_ends_with($className, 'Collection')) {
             $modelName = substr($className, 0, -10); // Remove 'Collection'
             $namespace = (new \ReflectionClass($this))->getNamespaceName();
-            $modelClass = $namespace . '\\' . $modelName;
+            $modelClass = $namespace.'\\'.$modelName;
 
             if (class_exists($modelClass)) {
                 return $modelClass;
@@ -65,21 +56,21 @@ class EmbedCollection implements ArrayAccess, Arrayable, Jsonable, JsonSerializa
      * Make a collection from the given items.
      *
      * @param  mixed  $items
-     * @return \Illuminate\Support\Collection
      */
     protected function makeCollection($items): Collection
     {
         if ($items instanceof Collection) {
-            return $items->map(fn($item) => $this->makeModel($item));
+            return $items->map(fn ($item) => $this->makeModel($item));
         }
 
         if (is_array($items)) {
-            return collect($items)->map(fn($item) => $this->makeModel($item));
+            return collect($items)->map(fn ($item) => $this->makeModel($item));
         }
 
         if (is_string($items)) {
             $decoded = json_decode($items, true);
-            return collect($decoded ?? [])->map(fn($item) => $this->makeModel($item));
+
+            return collect($decoded ?? [])->map(fn ($item) => $this->makeModel($item));
         }
 
         return collect();
@@ -89,7 +80,6 @@ class EmbedCollection implements ArrayAccess, Arrayable, Jsonable, JsonSerializa
      * Make a model instance from the given data.
      *
      * @param  mixed  $data
-     * @return \Juanparati\EmbedModels\EmbedModel
      */
     protected function makeModel($data): EmbedModel
     {
@@ -106,8 +96,6 @@ class EmbedCollection implements ArrayAccess, Arrayable, Jsonable, JsonSerializa
 
     /**
      * Get the underlying collection.
-     *
-     * @return \Illuminate\Support\Collection
      */
     public function getCollection(): Collection
     {
@@ -116,8 +104,6 @@ class EmbedCollection implements ArrayAccess, Arrayable, Jsonable, JsonSerializa
 
     /**
      * Get all items in the collection.
-     *
-     * @return array
      */
     public function all(): array
     {
@@ -127,11 +113,9 @@ class EmbedCollection implements ArrayAccess, Arrayable, Jsonable, JsonSerializa
     /**
      * Get the first item from the collection.
      *
-     * @param  callable|null  $callback
      * @param  mixed  $default
-     * @return mixed
      */
-    public function first(callable $callback = null, $default = null): mixed
+    public function first(?callable $callback = null, $default = null): mixed
     {
         return $this->items->first($callback, $default);
     }
@@ -139,11 +123,9 @@ class EmbedCollection implements ArrayAccess, Arrayable, Jsonable, JsonSerializa
     /**
      * Get the last item from the collection.
      *
-     * @param  callable|null  $callback
      * @param  mixed  $default
-     * @return mixed
      */
-    public function last(callable $callback = null, $default = null): mixed
+    public function last(?callable $callback = null, $default = null): mixed
     {
         return $this->items->last($callback, $default);
     }
@@ -157,6 +139,7 @@ class EmbedCollection implements ArrayAccess, Arrayable, Jsonable, JsonSerializa
     public function push($value): static
     {
         $this->items->push($this->makeModel($value));
+
         return $this;
     }
 
@@ -170,6 +153,7 @@ class EmbedCollection implements ArrayAccess, Arrayable, Jsonable, JsonSerializa
     public function put($key, $value): static
     {
         $this->items->put($key, $this->makeModel($value));
+
         return $this;
     }
 
@@ -178,7 +162,6 @@ class EmbedCollection implements ArrayAccess, Arrayable, Jsonable, JsonSerializa
      *
      * @param  mixed  $key
      * @param  mixed  $default
-     * @return mixed
      */
     public function get($key, $default = null): mixed
     {
@@ -189,7 +172,6 @@ class EmbedCollection implements ArrayAccess, Arrayable, Jsonable, JsonSerializa
      * Determine if an item exists in the collection by key.
      *
      * @param  mixed  $key
-     * @return bool
      */
     public function has($key): bool
     {
@@ -205,13 +187,12 @@ class EmbedCollection implements ArrayAccess, Arrayable, Jsonable, JsonSerializa
     public function forget($key): static
     {
         $this->items->forget($key);
+
         return $this;
     }
 
     /**
      * Get the number of items in the collection.
-     *
-     * @return int
      */
     public function count(): int
     {
@@ -220,8 +201,6 @@ class EmbedCollection implements ArrayAccess, Arrayable, Jsonable, JsonSerializa
 
     /**
      * Determine if the collection is empty.
-     *
-     * @return bool
      */
     public function isEmpty(): bool
     {
@@ -230,8 +209,6 @@ class EmbedCollection implements ArrayAccess, Arrayable, Jsonable, JsonSerializa
 
     /**
      * Determine if the collection is not empty.
-     *
-     * @return bool
      */
     public function isNotEmpty(): bool
     {
@@ -240,21 +217,16 @@ class EmbedCollection implements ArrayAccess, Arrayable, Jsonable, JsonSerializa
 
     /**
      * Filter items by the given key value pair.
-     *
-     * @param  callable|null  $callback
-     * @return static
      */
-    public function filter(callable $callback = null): static
+    public function filter(?callable $callback = null): static
     {
         $filtered = $this->items->filter($callback);
+
         return new static($filtered, $this->modelClass);
     }
 
     /**
      * Map over each of the items.
-     *
-     * @param  callable  $callback
-     * @return \Illuminate\Support\Collection
      */
     public function map(callable $callback): Collection
     {
@@ -263,8 +235,6 @@ class EmbedCollection implements ArrayAccess, Arrayable, Jsonable, JsonSerializa
 
     /**
      * Get the instance as an array.
-     *
-     * @return array
      */
     public function toArray(): array
     {
@@ -277,7 +247,6 @@ class EmbedCollection implements ArrayAccess, Arrayable, Jsonable, JsonSerializa
      * Convert the object to its JSON representation.
      *
      * @param  int  $options
-     * @return string
      */
     public function toJson($options = 0): string
     {
@@ -286,8 +255,6 @@ class EmbedCollection implements ArrayAccess, Arrayable, Jsonable, JsonSerializa
 
     /**
      * Convert the object into something JSON serializable.
-     *
-     * @return array
      */
     public function jsonSerialize(): array
     {
@@ -298,7 +265,6 @@ class EmbedCollection implements ArrayAccess, Arrayable, Jsonable, JsonSerializa
      * Determine if the given item exists.
      *
      * @param  mixed  $offset
-     * @return bool
      */
     public function offsetExists($offset): bool
     {
@@ -309,7 +275,6 @@ class EmbedCollection implements ArrayAccess, Arrayable, Jsonable, JsonSerializa
      * Get the item at the given offset.
      *
      * @param  mixed  $offset
-     * @return mixed
      */
     public function offsetGet($offset): mixed
     {
@@ -321,7 +286,6 @@ class EmbedCollection implements ArrayAccess, Arrayable, Jsonable, JsonSerializa
      *
      * @param  mixed  $offset
      * @param  mixed  $value
-     * @return void
      */
     public function offsetSet($offset, $value): void
     {
@@ -338,7 +302,6 @@ class EmbedCollection implements ArrayAccess, Arrayable, Jsonable, JsonSerializa
      * Unset the item at the given offset.
      *
      * @param  mixed  $offset
-     * @return void
      */
     public function offsetUnset($offset): void
     {

@@ -3,8 +3,8 @@
 namespace Juanparati\EmbedModels\Tests;
 
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Juanparati\EmbedModels\EmbedModel;
 use Illuminate\Validation\ValidationException;
+use Juanparati\EmbedModels\EmbedModel;
 use Orchestra\Testbench\TestCase;
 
 class EmbeddedModelTest extends TestCase
@@ -52,14 +52,14 @@ class EmbeddedModelTest extends TestCase
     {
         $this->expectException(ValidationException::class);
 
-        $address = new TestAddressWithValidation();
+        $address = new TestAddressWithValidation;
         $address->zip = 'invalid';
     }
 
     /** @test */
     public function it_allows_valid_attributes()
     {
-        $address = new TestAddressWithValidation();
+        $address = new TestAddressWithValidation;
         $address->zip = '12345';
 
         $this->assertEquals('12345', $address->zip);
@@ -111,7 +111,7 @@ class EmbeddedModelTest extends TestCase
     {
         $address = new TestAddressWithNested([
             'street' => '123 Main St',
-            'coordinates' => ['lat' => 40.7128, 'lng' => -74.0060]
+            'coordinates' => ['lat' => 40.7128, 'lng' => -74.0060],
         ]);
 
         $this->assertInstanceOf(TestCoordinates::class, $address->coordinates);
@@ -148,7 +148,7 @@ class EmbeddedModelTest extends TestCase
     {
         $address = new TestAddressWithNested([
             'street' => '123 Main St',
-            'coordinates' => ['lat' => 40.7128, 'lng' => -74.0060]
+            'coordinates' => ['lat' => 40.7128, 'lng' => -74.0060],
         ]);
 
         $array = $address->toArray();
@@ -173,7 +173,7 @@ class EmbeddedModelTest extends TestCase
     /** @test */
     public function it_supports_mutators()
     {
-        $model = new TestModelWithMutator();
+        $model = new TestModelWithMutator;
         $model->email = 'JOHN@EXAMPLE.COM';
 
         $this->assertEquals('john@example.com', $model->email);
@@ -226,7 +226,7 @@ class EmbeddedModelTest extends TestCase
     /** @test */
     public function it_handles_set_mutator_with_attribute_class()
     {
-        $model       = new TestModelWithMutatorSetterMethod();
+        $model = new TestModelWithMutatorSetterMethod;
         $model->name = '  john   doe  ';
 
         $this->assertEquals('JOHN DOE', $model->name);
@@ -235,11 +235,11 @@ class EmbeddedModelTest extends TestCase
     /** @test */
     public function it_handles_enum_mutator()
     {
-        $model       = new TestModelWithEnumCast();
+        $model = new TestModelWithEnumCast;
         $model->enum = TestEnum::Option2;
 
         $this->assertEquals(TestEnum::Option2, $model->enum);
-        $this->assertEquals(["enum" => "option2"], $model->toArray());
+        $this->assertEquals(['enum' => 'option2'], $model->toArray());
     }
 }
 
@@ -309,7 +309,7 @@ class TestModelWithAccessor extends EmbedModel
 {
     public function getFullNameAttribute()
     {
-        return $this->first_name . ' ' . $this->last_name;
+        return $this->first_name.' '.$this->last_name;
     }
 }
 
@@ -321,10 +321,9 @@ class TestModelWithMutator extends EmbedModel
     }
 }
 
-
 class TestModelWithMutatorSetterMethod extends EmbedModel
 {
-    protected function name() : Attribute
+    protected function name(): Attribute
     {
         return Attribute::make(
             get: fn ($value) => strtoupper($value),
@@ -333,8 +332,8 @@ class TestModelWithMutatorSetterMethod extends EmbedModel
     }
 }
 
-
-enum TestEnum : string {
+enum TestEnum: string
+{
     case Option1 = 'option1';
     case Option2 = 'option2';
 }
@@ -348,5 +347,3 @@ class TestModelWithEnumCast extends EmbedModel
         ];
     }
 }
-
-

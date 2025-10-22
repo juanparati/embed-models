@@ -21,7 +21,8 @@
     "require-dev": {
         "orchestra/testbench": "^9.0",
         "phpunit/phpunit": "^10.0",
-        "mockery/mockery": "^1.5"
+        "mockery/mockery": "^1.5",
+        "laravel/pint": "^1.25"
     },
     "autoload": {
         "psr-4": {
@@ -34,7 +35,8 @@
         }
     },
     "scripts": {
-        "test": "vendor/bin/phpunit"
+        "test": "vendor/bin/phpunit",
+        "pint": "vendor/bin/pint"
     },
     "minimum-stability": "stable",
     "prefer-stable": true

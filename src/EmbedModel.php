@@ -4,20 +4,18 @@ namespace Juanparati\EmbedModels;
 
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Concerns\HidesAttributes;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Fluent;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\Validator;
 use JsonSerializable;
 use Juanparati\EmbedModels\Concerns\HasAttributesWithoutModel;
 
 abstract class EmbedModel extends Fluent
 {
-    use HidesAttributes;
-
     use HasAttributesWithoutModel {
         castAttribute as castAttributeOrig;
     }
-
+    use HidesAttributes;
 
     /**
      * The cached cast types.
@@ -33,7 +31,6 @@ abstract class EmbedModel extends Fluent
      */
     protected $guarded = [];
 
-
     /**
      * The attributes that are mass assignable.
      *
@@ -41,11 +38,8 @@ abstract class EmbedModel extends Fluent
      */
     protected $fillable = ['*'];
 
-
     /**
      * Indicates if all mass assignment is enabled.
-     *
-     * @var bool
      */
     protected static bool $unguarded = false;
 
@@ -55,14 +49,12 @@ abstract class EmbedModel extends Fluent
         parent::__construct($attributes);
     }
 
-
     /**
      * Fill the model with an array of attributes.
      *
-     * @param iterable $attributes
+     * @param  iterable  $attributes
      * @return $this
      */
-
     public function fill($attributes)
     {
         foreach ($attributes as $key => $value) {
@@ -91,36 +83,13 @@ abstract class EmbedModel extends Fluent
         return false;
     }
 
-
     /**
      * Set an attribute on the embedded model.
      *
-     * @param string $key
-     * @param mixed $value
+     * @param  string  $key
+     * @param  mixed  $value
      * @return $this
      */
-    /*
-    public function setAttribute($key, $value): static
-    {
-        // Run validation before setting
-        $this->validateAttribute($key, $value);
-
-        // Handle mutators
-        if ($this->hasSetMutator($key)) {
-            return $this->setMutatedAttributeValue($key, $value);
-        }
-
-        // Handle casting
-        if ($this->hasCast($key)) {
-            $value = $this->castAttribute($key, $value);
-        }
-
-        $this->attributes[$key] = $value;
-
-        return $this;
-    }
-    */
-
     public function setAttribute($key, $value)
     {
 
@@ -162,16 +131,14 @@ abstract class EmbedModel extends Fluent
         return $this;
     }
 
-
     /**
      * Get an attribute from the embedded model.
      *
-     * @param string $key
-     * @return mixed
+     * @param  string  $key
      */
     public function getAttribute($key): mixed
     {
-        if (!$key) {
+        if (! $key) {
             return null;
         }
 
@@ -183,12 +150,10 @@ abstract class EmbedModel extends Fluent
         return null;
     }
 
-
-
     /**
      * Determine whether an attribute should be cast to a native type.
      *
-     * @param string $key
+     * @param  string  $key
      * @return bool
      */
     protected function getCasts(): array
@@ -207,14 +172,11 @@ abstract class EmbedModel extends Fluent
         return $this->cachedCasts;
     }
 
-
-
     /**
      * Cast an attribute to a native PHP type.
      *
-     * @param string $key
-     * @param mixed $value
-     * @return mixed
+     * @param  string  $key
+     * @param  mixed  $value
      */
     protected function castAttribute($key, $value): mixed
     {
@@ -228,11 +190,12 @@ abstract class EmbedModel extends Fluent
         switch ($this->getCastType($key)) {
             case 'array':
             case 'json':
-                return is_string($value) ? json_decode($value, true) : (array)$value;
+                return is_string($value) ? json_decode($value, true) : (array) $value;
             case 'object':
-                return is_string($value) ? json_decode($value) : (object)$value;
+                return is_string($value) ? json_decode($value) : (object) $value;
             case 'collection':
                 $data = is_string($value) ? json_decode($value, true) : $value;
+
                 return collect($data);
         }
 
@@ -241,11 +204,6 @@ abstract class EmbedModel extends Fluent
 
     /**
      * Cast an attribute to a custom class.
-     *
-     * @param string $key
-     * @param mixed $value
-     * @param string $castType
-     * @return mixed
      */
     protected function castAttributeAsClass(string $key, mixed $value, string $castType): mixed
     {
@@ -257,6 +215,7 @@ abstract class EmbedModel extends Fluent
             if (is_string($value)) {
                 return new $castType(json_decode($value, true));
             }
+
             return $value;
         }
 
@@ -268,13 +227,9 @@ abstract class EmbedModel extends Fluent
         return null;
     }
 
-
     /**
      * Validate an attribute before setting it.
      *
-     * @param string $key
-     * @param mixed $value
-     * @return void
      *
      * @throws \Illuminate\Validation\ValidationException
      */
@@ -282,7 +237,7 @@ abstract class EmbedModel extends Fluent
     {
         $rules = $this->rules();
 
-        if (empty($rules) || !array_key_exists($key, $rules)) {
+        if (empty($rules) || ! array_key_exists($key, $rules)) {
             return;
         }
 
@@ -325,7 +280,7 @@ abstract class EmbedModel extends Fluent
     /**
      * Get an arrayable value.
      *
-     * @param mixed $value
+     * @param  mixed  $value
      * @return mixed
      */
     protected function getArrayableValue($value)
@@ -344,7 +299,7 @@ abstract class EmbedModel extends Fluent
     /**
      * Convert the object to its JSON representation.
      *
-     * @param int $options
+     * @param  int  $options
      * @return string
      */
     public function toJson($options = 0)
@@ -354,8 +309,6 @@ abstract class EmbedModel extends Fluent
 
     /**
      * Convert the object into something JSON serializable.
-     *
-     * @return array
      */
     public function jsonSerialize(): array
     {
@@ -365,7 +318,7 @@ abstract class EmbedModel extends Fluent
     /**
      * Dynamically retrieve attributes on the model.
      *
-     * @param string $key
+     * @param  string  $key
      * @return mixed
      */
     public function __get($key)
@@ -376,8 +329,8 @@ abstract class EmbedModel extends Fluent
     /**
      * Dynamically set attributes on the model.
      *
-     * @param string $key
-     * @param mixed $value
+     * @param  string  $key
+     * @param  mixed  $value
      * @return void
      */
     public function __set($key, $value)
@@ -388,18 +341,18 @@ abstract class EmbedModel extends Fluent
     /**
      * Determine if an attribute exists on the model.
      *
-     * @param string $key
+     * @param  string  $key
      * @return bool
      */
     public function __isset($key)
     {
-        return !is_null($this->getAttribute($key));
+        return ! is_null($this->getAttribute($key));
     }
 
     /**
      * Unset an attribute on the model.
      *
-     * @param string $key
+     * @param  string  $key
      * @return void
      */
     public function __unset($key)

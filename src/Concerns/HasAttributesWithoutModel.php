@@ -9,34 +9,30 @@ trait HasAttributesWithoutModel
 {
     use HasAttributes;
 
-
     /**
      * Return a timestamp as DateTime object.
      *
-     * @param mixed $value
-     * @return CarbonInterface
+     * @param  mixed  $value
      */
     protected function asDateTime($value): CarbonInterface
     {
         return \Illuminate\Support\Carbon::parse($value);
     }
 
-
     // Override non-applicable methods
-    public function relationLoaded($key) {
+    public function relationLoaded($key)
+    {
         return false;
     }
 
-    public function getRelationValue($key) {
-        return;
-    }
+    public function getRelationValue($key) {}
 
     public function isRelation($key)
     {
         return false;
     }
 
-    public function relationsToArray() : array
+    public function relationsToArray(): array
     {
         return $this->getAttributes();
     }
@@ -46,14 +42,10 @@ trait HasAttributesWithoutModel
         return null;
     }
 
-    protected function handleLazyLoadingViolation($key)
-    {
-        return;
-    }
+    protected function handleLazyLoadingViolation($key) {}
 
     protected static function preventsAccessingMissingAttributes()
     {
         return false;
     }
-
 }
