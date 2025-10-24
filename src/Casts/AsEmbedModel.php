@@ -100,7 +100,7 @@ class AsEmbedModelCaster implements CastsAttributes
             return json_encode($value->toArray());
         }
 
-        if (is_array($value)) {
+        if (is_array($value) || is_object($value)) {
             return json_encode($value);
         }
 

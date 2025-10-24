@@ -211,6 +211,17 @@ it('has embedded model casts as function work correctly', function () {
     expect($retrieved->line_items[0]->price)->toBe(10.5);
 });
 
+it('has embedded model that derives from predefined structure', function () {
+    $order = new TestModelWithPredefinedStructure;
+    expect($order->shipping_address->coordinates->isEmpty())->toBeTrue();
+
+    $order->forceFill([
+        'shipping_address' => '{"coordinates":["foo"]}'
+    ]);
+
+    expect($order->shipping_address->coordinates[0])->toBe('foo');
+});
+
 // Test Eloquent Model
 
 class TestOrder extends Model
@@ -238,6 +249,14 @@ class TestOrderWithCastFunction extends Model
             'line_items' => AsEmbedCollection::of(TestOrderLineItemCollection::class),
         ];
     }
+}
+
+class TestModelWithPredefinedStructure extends TestOrderWithCastFunction {
+
+    protected $attributes = [
+        'shipping_address' => '{"coordinates":[]}'
+    ];
+
 }
 
 // Test Embedded Models
@@ -269,3 +288,5 @@ class TestOrderLineItemCollection extends EmbedCollection
         return TestOrderLineItem::class;
     }
 }
+
+
