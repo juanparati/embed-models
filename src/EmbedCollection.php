@@ -237,7 +237,8 @@ class EmbedCollection implements EmbedCollectionInterface
     public function toArray(): array
     {
         return $this->items->map(function ($item) {
-            return $item instanceof Arrayable ? $item->toArray() : $item;
+            return $item instanceof \JsonSerializable ?
+                $item->jsonSerialize() : ($item instanceof Arrayable ? $item->toArray() : $item);
         })->all();
     }
 

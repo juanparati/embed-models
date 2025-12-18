@@ -93,9 +93,6 @@ abstract class EmbedModel extends Fluent implements EmbedModelInterface
      */
     public function setAttribute($key, $value)
     {
-
-        $this->validateAttribute($key, $value);
-
         // First we will check for the presence of a mutator for the set operation
         // which simply lets the developers tweak the attribute as it is set on
         // this model, such as "json_encoding" a listing of data for storage.
@@ -110,14 +107,6 @@ abstract class EmbedModel extends Fluent implements EmbedModelInterface
 
             return $this;
         }
-
-        /*
-        if ($this->isClassCastable($key)) {
-            $this->setClassCastableAttribute($key, $value);
-
-            return $this;
-        }
-        */
 
         if (! is_null($value) && $this->isEncryptedCastable($key)) {
             $value = $this->castAttributeAsEncryptedString($key, $value);
@@ -228,36 +217,13 @@ abstract class EmbedModel extends Fluent implements EmbedModelInterface
         return null;
     }
 
-    /**
-     * Validate an attribute before setting it.
-     *
-     *
-     * @throws \Illuminate\Validation\ValidationException
-     */
-    protected function validateAttribute(string $key, mixed $value): void
-    {
-        $rules = $this->rules();
-
-        if (empty($rules) || ! array_key_exists($key, $rules)) {
-            return;
-        }
-
-        $validator = Validator::make(
-            [$key => $value],
-            [$key => $rules[$key]]
-        );
-
-        if ($validator->fails()) {
-            throw new ValidationException($validator);
-        }
-    }
 
     /**
      * Get the validation rules that apply to the embedded model.
      *
      * @return array
      */
-    protected function rules()
+    public function validationRules()
     {
         return [];
     }
@@ -332,7 +298,20 @@ abstract class EmbedModel extends Fluent implements EmbedModelInterface
      */
     public function jsonSerialize(): array
     {
-        return $this->toArray();
+        $data = $this->toArray();
+
+        if (!empty($this->validationRules())) {
+            $validator = Validator::make(
+                $data,
+                $this->validationRules()
+            );
+
+            if ($validator->fails()) {
+                throw new ValidationException($validator);
+            }
+        }
+
+        return $data;
     }
 
     /**

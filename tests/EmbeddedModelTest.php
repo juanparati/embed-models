@@ -37,6 +37,7 @@ it('respects guarded attributes', function () {
 it('validates attributes on set', function () {
     $address = new TestAddressWithValidation;
     $address->zip = 'invalid';
+    $address->toJson();
 })->throws(ValidationException::class);
 
 it('allows valid attributes', function () {
@@ -47,7 +48,7 @@ it('allows valid attributes', function () {
 });
 
 it('validates on construction', function () {
-    new TestAddressWithValidation(['zip' => 'invalid']);
+    (new TestAddressWithValidation(['zip' => 'invalid']))->toJson();
 })->throws(ValidationException::class);
 
 it('casts integer attributes', function () {
@@ -213,7 +214,7 @@ class TestAddressWithGuarded extends EmbedModel
 
 class TestAddressWithValidation extends EmbedModel
 {
-    protected function rules()
+    public function validationRules(): array
     {
         return [
             'zip' => 'required|regex:/^\d{5}$/',

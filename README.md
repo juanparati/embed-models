@@ -42,7 +42,7 @@ class Address extends EmbedModel
         ];
     }   
 
-    protected function rules()
+    protected function validationRules()
     {
         return [
             'zip' => 'required|regex:/^\d{5}$/',
@@ -130,7 +130,7 @@ class LineItem extends EmbedModel
         ];
     }
     
-    protected function rules()
+    protected function validationRules()
     {
         return [
             'quantity' => 'required|integer|min:1',
@@ -302,7 +302,7 @@ Validation runs automatically when you set attributes:
 ```php
 class Address extends EmbeddedModel
 {
-    protected function rules()
+    protected function validationRules()
     {
         return [
             'zip' => 'required|regex:/^\d{5}$/',
@@ -335,6 +335,49 @@ class Product extends EmbeddedModel
 }
 ```
 
+## Validation helper
+
+The `CanExtractValidationRules` trait can be used to extract validation rules from embedded models and apply them to request objects.
+
+The trait provides the following static methods:
+
+- `extractValidationRules`: Extract the validation rules. It's a facade of (new EmbedModel)->validationRules() method.
+- `encapsulateRules`: Encapsulate the validation rules into parent rules.
+
+Example of `encapsulateRules`:
+
+```php
+class Address extends EmbeddedModel
+{
+    use CanExtractValidationRules;
+    
+    protected function validationRules()
+    {
+        return [
+            'zip' => 'required|regex:/^\d{5}$/',
+            'email' => 'required|email',
+        ];
+    }
+}
+
+class PostCustomerRequest extends FormRequest
+{
+    public function rules(): array
+    {
+    	return [
+    	    'name' => 'required'
+    	] + Address::encapsulateRules(into: 'address', parentRule: 'nullable', isCollection: false);
+    	
+    	// It Generates:
+    	// [
+    	//     'name' => 'required',
+    	//     'address' => 'nullable',
+    	//     'address.zip' => 'required|regex:/^\d{5}$/',
+    	//     'address.email' => 'required|email',
+    	// ]
+    }
+}
+```
 
 ## Behavior Notes
 
@@ -342,7 +385,7 @@ class Product extends EmbeddedModel
 
 2. **Null Initialization**: If a JSON field is null in the database, accessing it returns `null`, not an empty embedded model, however it's possible to initialize an embedded model using default attributes.
 
-3. **Validation Timing**: Validation runs when attributes are set, not when the parent model saves.
+3. **Validation Timing**: Validation runs when model is serialized.
 
 4. **No Persistence Methods**: Embedded models don't have `save()`, `update()`, or `delete()` methods. They're saved only through the parent model.
 

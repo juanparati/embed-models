@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Validation\ValidationException;
 use Juanparati\EmbedModels\Casts\AsEmbedCollection;
 use Juanparati\EmbedModels\EmbedCollection;
 use Juanparati\EmbedModels\EmbedModel;
@@ -211,11 +212,22 @@ it('can cast collection automatically', function () {
     expect($model->line_items[0]->sku)->toBe('ABC');
 });
 
+it('raise error on sub-model validation', function () {
+    (new TestMainModel([
+        'line_items' => [new TestLineItem(['quantity' => 5])]
+    ]))->toJson();
+})->throws(ValidationException::class);
+
 // Test classes
 
 class TestLineItem extends EmbedModel
 {
-    //
+    public function validationRules(): array
+    {
+        return [
+            'sku' => 'required|string',
+        ];
+    }
 }
 
 class TestLineItemCollection extends EmbedCollection
