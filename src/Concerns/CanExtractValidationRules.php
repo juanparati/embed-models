@@ -4,11 +4,15 @@ namespace Juanparati\EmbedModels\Concerns;
 
 trait CanExtractValidationRules
 {
+    public string $validationInto = '';
+
     /**
      * Facade that allows to extract the validation rules from the embed model.
      */
-    public static function extractValidationRules(): array {
-        return (new static)->validationRules();
+    public static function extractValidationRules(string $into = ''): array {
+        $model = new static;
+        $model->validationInto = $into;
+        return $model->validationRules();
     }
 
 
@@ -24,11 +28,9 @@ trait CanExtractValidationRules
         return [
             $into => $parentRule,
             ...\Arr::mapWithKeys(
-                static::extractValidationRules(),
-                fn($v, $k) => ["$into" . ($isCollection ? '.*' : '') . ".$k" => $v]
+                static::extractValidationRules($into ? ($into . ($isCollection ? '.*.' : '.')) : ''),
+                fn($v, $k) => [$into . ($isCollection ? '.*' : '') . ".$k" => $v]
             )
         ];
     }
-
-
 }
