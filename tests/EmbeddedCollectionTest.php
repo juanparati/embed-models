@@ -212,12 +212,6 @@ it('can cast collection automatically', function () {
     expect($model->line_items[0]->sku)->toBe('ABC');
 });
 
-it('raise error on sub-model validation', function () {
-    (new TestMainModel([
-        'line_items' => [new TestLineItem(['quantity' => 5])]
-    ]))->toJson();
-})->throws(ValidationException::class);
-
 // Test classes
 
 class TestLineItem extends EmbedModel

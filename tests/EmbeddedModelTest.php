@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Validation\ValidationException;
 use Juanparati\EmbedModels\EmbedModel;
 
 it('can create embedded model with attributes', function () {
@@ -33,23 +32,6 @@ it('respects guarded attributes', function () {
     expect($address->street)->toBe('123 Main St');
     expect($address->internal_id)->toBeNull();
 });
-
-it('validates attributes on set', function () {
-    $address = new TestAddressWithValidation;
-    $address->zip = 'invalid';
-    $address->toJson();
-})->throws(ValidationException::class);
-
-it('allows valid attributes', function () {
-    $address = new TestAddressWithValidation;
-    $address->zip = '12345';
-
-    expect($address->zip)->toBe('12345');
-});
-
-it('validates on construction', function () {
-    (new TestAddressWithValidation(['zip' => 'invalid']))->toJson();
-})->throws(ValidationException::class);
 
 it('casts integer attributes', function () {
     $model = new TestModelWithCasts(['age' => '25']);
@@ -210,16 +192,6 @@ class TestAddressWithFillable extends EmbedModel
 class TestAddressWithGuarded extends EmbedModel
 {
     protected $guarded = ['internal_id'];
-}
-
-class TestAddressWithValidation extends EmbedModel
-{
-    public function validationRules(): array
-    {
-        return [
-            'zip' => 'required|regex:/^\d{5}$/',
-        ];
-    }
 }
 
 class TestModelWithCasts extends EmbedModel

@@ -8,7 +8,6 @@ A Laravel package that allows to embed sub-models inside JSON fields in Eloquent
 ## Features
 
 - **Model Behavior**: Embedded models support attributes, accessors, mutators, casts, fillable/guarded.
-- **Validation**: Validate embedded model attributes on write with Laravel's validation rules.
 - **Nested Support**: Embed models within embedded models.
 - **Collections**: Handle arrays of embedded models with collection-like interfaces.
 - **Array Access**: Access embedded model attributes like arrays.
@@ -16,6 +15,8 @@ A Laravel package that allows to embed sub-models inside JSON fields in Eloquent
 - **No Persistence Methods**: Embedded models don't save/delete - they're saved via the parent model.
 - **JSON raw**: Save embedded models as JSON raw strings (not objects serialization).
 - **Transparent hydration**: Inject your nested embed-model directly from a post request or array.
+- **Validation trait**: Provides a helper trait for inject model validation rules into requests.
+
 
 
 ## Installation
@@ -41,14 +42,6 @@ class Address extends EmbedModel
             'verified' => 'boolean',
         ];
     }   
-
-    protected function validationRules()
-    {
-        return [
-            'zip' => 'required|regex:/^\d{5}$/',
-            'street' => 'required|string',
-        ];
-    }
 }
 ```
 
@@ -127,14 +120,6 @@ class LineItem extends EmbedModel
         return [
             'quantity' => 'integer',
             'price' => 'float',
-        ];
-    }
-    
-    protected function validationRules()
-    {
-        return [
-            'quantity' => 'required|integer|min:1',
-            'price' => 'required|numeric|min:0',
         ];
     }
 }
@@ -293,29 +278,6 @@ $address = new Address([
 ]);
 ```
 
-### Validation
-
-In case that validation rules are defined, they will be automatically applied to embedded models.
-
-Validation runs automatically when you set attributes:
-
-```php
-class Address extends EmbeddedModel
-{
-    protected function validationRules()
-    {
-        return [
-            'zip' => 'required|regex:/^\d{5}$/',
-            'email' => 'required|email',
-        ];
-    }
-}
-
-// This will throw ValidationException
-$address = new Address();
-$address->zip = 'invalid'; // Throws ValidationException
-```
-
 ### Type Casting
 
 All Eloquent casting types are supported:
@@ -335,31 +297,37 @@ class Product extends EmbeddedModel
 }
 ```
 
-## Validation helper
+## Validation trait
 
-The `CanExtractValidationRules` trait can be used to extract validation rules from embedded models and apply them to request objects.
+The `HasValidation` trait can be used to validate and extract validation rules from embedded models and apply them to request objects.
 
 The trait provides the following static methods:
 
-- `extractValidationRules`: Extract the validation rules. It's a facade of (new EmbedModel)->validationRules() method.
+- `extractValidationRules`: Extract the validation rules.
 - `encapsulateRules`: Encapsulate the validation rules into parent rules.
+- `validateRules`: Perform validation over a request/input data.
 
-Example of `encapsulateRules`:
+When the trait is used the EmbedModel must implement the validateRules method:
 
 ```php
 class Address extends EmbeddedModel
 {
-    use CanExtractValidationRules;
+    use HasValidation;
     
-    protected function validationRules()
+    protected function validationRules(string $into = '', array $input = [])
     {
         return [
             'zip' => 'required|regex:/^\d{5}$/',
             'email' => 'required|email',
+            'zone' => "required_if:$into.zip,8200",
         ];
     }
 }
+```
 
+Example of `encapsulateRules`:
+
+```php
 class PostCustomerRequest extends FormRequest
 {
     public function rules(): array
@@ -374,6 +342,7 @@ class PostCustomerRequest extends FormRequest
     	//     'address' => 'nullable',
     	//     'address.zip' => 'required|regex:/^\d{5}$/',
     	//     'address.email' => 'required|email',
+    	//     'address.zone' => "required_if:address.zip,8200",
     	// ]
     }
 }

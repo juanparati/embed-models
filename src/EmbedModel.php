@@ -4,9 +4,7 @@ namespace Juanparati\EmbedModels;
 
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Concerns\HidesAttributes;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Fluent;
-use Illuminate\Validation\ValidationException;
 use JsonSerializable;
 use Juanparati\EmbedModels\Concerns\HasAttributesWithoutModel;
 use Juanparati\EmbedModels\Contracts\EmbedModelInterface;
@@ -219,16 +217,6 @@ abstract class EmbedModel extends Fluent implements EmbedModelInterface
 
 
     /**
-     * Get the validation rules that apply to the embedded model.
-     *
-     * @return array
-     */
-    public function validationRules()
-    {
-        return [];
-    }
-
-    /**
      * Get the instance as an array.
      *
      * @return array
@@ -298,20 +286,7 @@ abstract class EmbedModel extends Fluent implements EmbedModelInterface
      */
     public function jsonSerialize(): array
     {
-        $data = $this->toArray();
-
-        if (!empty($this->validationRules())) {
-            $validator = Validator::make(
-                $data,
-                $this->validationRules()
-            );
-
-            if ($validator->fails()) {
-                throw new ValidationException($validator);
-            }
-        }
-
-        return $data;
+        return $this->toArray();
     }
 
     /**
