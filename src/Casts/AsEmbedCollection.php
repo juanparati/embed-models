@@ -2,14 +2,9 @@
 
 namespace Juanparati\EmbedModels\Casts;
 
-use \Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Database\Eloquent\Castable;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Juanparati\EmbedModels\Contracts\EmbedCollectionInterface;
-use Juanparati\EmbedModels\Contracts\EmbedModelInterface;
-use Juanparati\EmbedModels\EmbedCollection;
-use Juanparati\EmbedModels\EmbedModel;
-
 
 class AsEmbedCollection implements Castable
 {
@@ -51,20 +46,13 @@ class AsEmbedCollectionCaster implements CastsAttributes
 
     /**
      * Cast the given value.
-     *
-     * @param $model
-     * @param string $key
-     * @param mixed $value
-     * @param array $attributes
-     * @return EmbedCollectionInterface|null
      */
     public function get(
         $model,
         string $key,
         mixed $value,
         array $attributes
-    ): ?EmbedCollectionInterface
-    {
+    ): ?EmbedCollectionInterface {
         if (is_null($value)) {
             return null;
         }
@@ -81,19 +69,14 @@ class AsEmbedCollectionCaster implements CastsAttributes
     /**
      * Prepare the given value for storage.
      *
-     * @param array|EmbedCollectionInterface $model
-     * @param string $key
-     * @param mixed $value
-     * @param array $attributes
-     * @return string|null
+     * @param  array|EmbedCollectionInterface  $model
      */
     public function set(
         $model,
         string $key,
         mixed $value,
         array $attributes
-    ): ?string
-    {
+    ): ?string {
         if (is_null($value)) {
             return null;
         }

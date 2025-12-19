@@ -215,7 +215,6 @@ abstract class EmbedModel extends Fluent implements EmbedModelInterface
         return null;
     }
 
-
     /**
      * Get the instance as an array.
      *
@@ -244,7 +243,7 @@ abstract class EmbedModel extends Fluent implements EmbedModelInterface
      */
     protected function getArrayableAppends()
     {
-        if (!isset($this->appends)) {
+        if (! isset($this->appends)) {
             return [];
         }
 

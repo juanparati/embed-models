@@ -216,7 +216,7 @@ it('has embedded model that derives from predefined structure', function () {
     expect($order->shipping_address->coordinates->isEmpty())->toBeTrue();
 
     $order->forceFill([
-        'shipping_address' => '{"coordinates":["foo"]}'
+        'shipping_address' => '{"coordinates":["foo"]}',
     ]);
 
     expect($order->shipping_address->coordinates[0])->toBe('foo');
@@ -251,12 +251,11 @@ class TestOrderWithCastFunction extends Model
     }
 }
 
-class TestModelWithPredefinedStructure extends TestOrderWithCastFunction {
-
+class TestModelWithPredefinedStructure extends TestOrderWithCastFunction
+{
     protected $attributes = [
-        'shipping_address' => '{"coordinates":[]}'
+        'shipping_address' => '{"coordinates":[]}',
     ];
-
 }
 
 // Test Embedded Models
@@ -288,5 +287,3 @@ class TestOrderLineItemCollection extends EmbedCollection
         return TestOrderLineItem::class;
     }
 }
-
-

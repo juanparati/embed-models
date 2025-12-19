@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Validation\ValidationException;
 use Juanparati\EmbedModels\Casts\AsEmbedCollection;
 use Juanparati\EmbedModels\EmbedCollection;
 use Juanparati\EmbedModels\EmbedModel;

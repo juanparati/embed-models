@@ -6,8 +6,7 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Support\Collection;
 
-
-interface EmbedCollectionInterface extends \Countable, \IteratorAggregate, Arrayable, \ArrayAccess, Jsonable, \JsonSerializable
+interface EmbedCollectionInterface extends \ArrayAccess, \Countable, \IteratorAggregate, \JsonSerializable, Arrayable, Jsonable
 {
     public function getCollection(): Collection;
 

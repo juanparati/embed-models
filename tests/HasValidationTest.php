@@ -4,7 +4,7 @@ use Juanparati\EmbedModels\EmbedModel;
 
 it('can extract validation rules from class', function () {
     expect(TestWithValidation::extractValidationRules())
-        ->toBe((new TestWithValidation())->validationRules());
+        ->toBe((new TestWithValidation)->validationRules());
 });
 
 it('can encapsulate validation rules', function () {
@@ -22,7 +22,7 @@ it('can encapsulate validation rules with parent rules as collection', function 
         ->toBe(['test' => 'nullable', 'test.*.num' => 'required|int', 'test.*.id' => 'required_if:test.*.num,1']);
 });
 
-it('can validate', function() {
+it('can validate', function () {
     expect(TestWithValidation::validateRules(['num' => 1]))->toBeFalse();
 });
 
@@ -35,8 +35,7 @@ class TestWithValidation extends EmbedModel
     {
         return [
             'num' => 'required|int',
-            'id' => 'required_if:' . $into . 'num,1',
+            'id' => 'required_if:'.$into.'num,1',
         ];
     }
 }
-
