@@ -45,6 +45,7 @@ abstract class EmbedModel extends Fluent implements EmbedModelInterface
     public function __construct($attributes = [])
     {
         $this->initializeHasAttributes();
+        $this->initializeHidesAttributes();
         parent::__construct($attributes);
     }
 
@@ -224,8 +225,10 @@ abstract class EmbedModel extends Fluent implements EmbedModelInterface
     {
         $attributes = [];
 
-        foreach ($this->attributes as $key => $value) {
-            $attributes[$key] = $this->getArrayableValue($value);
+        $keys = $this->getArrayableKeys(array_keys($this->attributes));
+
+        foreach ($keys as $key) {
+            $attributes[$key] = $this->getArrayableValue($this->attributes[$key]);
         }
 
         // Append accessors
@@ -234,6 +237,18 @@ abstract class EmbedModel extends Fluent implements EmbedModelInterface
         }
 
         return $attributes;
+    }
+
+    /**
+     * Get the arrayable attribute keys, respecting hidden/visible.
+     */
+    protected function getArrayableKeys(array $keys): array
+    {
+        if (count($this->getVisible()) > 0) {
+            return array_intersect($keys, $this->getVisible());
+        }
+
+        return array_diff($keys, $this->getHidden());
     }
 
     /**
