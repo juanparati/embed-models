@@ -177,6 +177,33 @@ it('generates virtual attributes', function () {
     expect($model->foo)->toBe('bar');
 });
 
+it('supports Appends PHP attribute', function () {
+    $model = new TestModelWithAppendsAttribute;
+    $model->first_name = 'John';
+    $model->last_name = 'Doe';
+
+    $array = $model->toArray();
+
+    expect($array)->toHaveKey('full_name');
+    expect($array['full_name'])->toBe('John Doe');
+});
+
+it('supports Hidden PHP attribute', function () {
+    $model = new TestModelWithHiddenAttribute(['public_field' => 'visible', 'secret_field' => 'hidden']);
+
+    $array = $model->toArray();
+
+    expect($array)->toHaveKey('public_field');
+    expect($array)->not->toHaveKey('secret_field');
+});
+
+it('supports DateFormat PHP attribute', function () {
+    $model = new TestModelWithDateFormatAttribute(['created_at' => '2024-06-15 14:30:00']);
+
+    expect($model->created_at->format('Y-m-d'))->toBe('2024-06-15');
+    expect($model->getDateFormat())->toBe('Y-m-d');
+});
+
 // Test classes
 
 class TestAddress extends EmbedModel
@@ -285,5 +312,33 @@ class TestModelWithVirtualAttribute extends EmbedModel
         return Attribute::make(
             get: fn () => 'Generated Attribute',
         );
+    }
+}
+
+#[\Illuminate\Database\Eloquent\Attributes\Appends('full_name')]
+class TestModelWithAppendsAttribute extends EmbedModel
+{
+    protected function fullName(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->first_name.' '.$this->last_name,
+        );
+    }
+}
+
+#[\Illuminate\Database\Eloquent\Attributes\Hidden('secret_field')]
+class TestModelWithHiddenAttribute extends EmbedModel
+{
+    //
+}
+
+#[\Illuminate\Database\Eloquent\Attributes\DateFormat('Y-m-d')]
+class TestModelWithDateFormatAttribute extends EmbedModel
+{
+    protected function casts(): array
+    {
+        return [
+            'created_at' => 'datetime',
+        ];
     }
 }

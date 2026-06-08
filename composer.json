@@ -14,12 +14,12 @@
     ],
     "require": {
         "php": "^8.2",
-        "illuminate/database": "^12.0",
-        "illuminate/support": "^12.0",
-        "illuminate/validation": "^12.0"
+        "illuminate/database": "^13.0",
+        "illuminate/support": "^13.0",
+        "illuminate/validation": "^13.0"
     },
     "require-dev": {
-        "orchestra/testbench": "^10.0",
+        "orchestra/testbench": "^11.0",
         "mockery/mockery": "^1.5",
         "laravel/pint": "^1.25",
         "pestphp/pest": "^4.1"
