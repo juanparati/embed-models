@@ -21,10 +21,17 @@ A Laravel package that allows to embed sub-models inside JSON fields in Eloquent
 
 ## Installation
 
+For Laravel 13.x:
+
 ```bash
-composer require juanparati/embed-models
+composer require juanparati/embed-models:^13.0 
 ```
 
+For Laravel 12.x:
+
+```bash
+composer require juanparati/embed-models:^12.0 
+```
 
 ## Basic usage
 
